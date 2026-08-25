@@ -1,5 +1,0 @@
-[Runtime]
-name=com.kimi.Console.Debug
-
-[ExtensionOf]
-ref=app/com.kimi.Console/x86_64/master

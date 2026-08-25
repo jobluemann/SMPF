@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Kimi Console
-Comment=Personal AI workspace
-Exec=kimi-console
-Icon=com.kimi.Console
-Terminal=false
-Type=Application
-Categories=Utility;Office;
-StartupNotify=true
