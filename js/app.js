@@ -11,10 +11,10 @@ class App {
   constructor() {
     this.currentView = 'chat';
     this.currentProject = null;
-    this.provider = 'groq';
+    this.provider = 'kimi';
     this.providerModels = { kimi: PROVIDERS.kimi.model, groq: PROVIDERS.groq.model, openrouter: PROVIDERS.openrouter.model, openclaw: PROVIDERS.openclaw.model };
     this.chatMode = 'normal';
-    this.developmentProvider = 'openrouter';
+    this.developmentProvider = 'kimi';
     this.developmentModel = PROVIDERS.openrouter.model;
     this.github = null;
     this.wpClient = null;
@@ -991,7 +991,7 @@ class App {
     this.lastUsedModel = await Settings.get('lastUsedModel', 'None yet');
     const lastUsedModel = document.getElementById('lastUsedModel');
     if (lastUsedModel) lastUsedModel.textContent = 'Last used: ' + this.lastUsedModel;
-    const savedProvider = await Settings.get('chatProvider', 'groq');
+    const savedProvider = await Settings.get('chatProvider', 'kimi');
     this.provider = PROVIDERS[savedProvider] ? savedProvider : 'groq';
     const providerSelect = document.getElementById('providerSelect');
     if (providerSelect) providerSelect.value = this.provider;
@@ -1016,7 +1016,7 @@ class App {
     document.getElementById('openclawViewModel').value = this.providerModels.openclaw;
     const activeModel = document.getElementById('activeModel');
     if (activeModel) activeModel.textContent = `${this.provider}: ${this.providerModels[this.provider]}`;
-    const savedDevelopmentProvider = await Settings.get('developmentProvider', 'openrouter');
+    const savedDevelopmentProvider = await Settings.get('developmentProvider', 'kimi');
     this.developmentProvider = PROVIDERS[savedDevelopmentProvider] ? savedDevelopmentProvider : 'openrouter';
     const savedDevelopmentModel = await Settings.get('developmentModel', PROVIDERS[this.developmentProvider].model);
     this.developmentModel = PROVIDERS[this.developmentProvider].models.includes(savedDevelopmentModel) ? savedDevelopmentModel : PROVIDERS[this.developmentProvider].model;
