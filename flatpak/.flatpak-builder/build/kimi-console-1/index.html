@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kimi Console</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f0f0f" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">Kimi Console</div>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="chat">Chat</button>
+        <button class="nav-btn" data-view="projects">Projects</button>
+        <button class="nav-btn" data-view="prompts">Prompts</button>
+        <button class="nav-btn" data-view="notes">Notes</button>
+        <button class="nav-btn" data-view="context">Context</button>
+        <button class="nav-btn" data-view="development">Development</button>
+        <button class="nav-btn" data-view="sync">Sync</button>
+        <button class="nav-btn" data-view="openclaw">OpenClaw</button>
+        <button class="nav-btn" data-view="integrations">Integrations</button>
+        <button class="nav-btn" data-view="settings">Settings</button>
+      </nav>
+      <div class="sync-status" id="syncStatus">Offline</div>
+      <div class="sync-status" id="buildInfo"></div>
+    </aside>
+
+    <main class="main" id="main">
+      <!-- Chat View -->
+      <section class="view" id="view-chat">
+        <header class="view-header">
+          <h2>Chat</h2>
+          <select id="providerSelect" class="provider-select">
+            <option value="groq">Groq (Free Tier)</option>
+            <option value="openrouter">OpenRouter (Free Tier)</option>
+            <option value="kimi">Kimi</option>
+            <option value="openclaw">OpenClaw (Local)</option>
+          </select>
+          <span id="activeModel" class="model-info"></span>
+          <span id="lastUsedModel" class="model-info"></span>
+          <button id="newChatBtn" class="btn" title="Start a new chat">New Chat</button>
+        </header>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input-row">
+          <input type="file" id="fileInput" multiple hidden />
+          <button id="attachBtn" class="icon-btn" title="Attach files">📎</button>
+          <textarea id="chatInput" placeholder="Message..." rows="1"></textarea>
+          <button id="micBtn" class="icon-btn" title="Voice input">🎙️</button>
+          <button id="sendBtn" class="icon-btn" title="Send">➤</button>
+        </div>
+      </section>
+
+      <!-- Projects View -->
+      <section class="view hidden" id="view-projects">
+        <header class="view-header"><h2>Projects</h2></header>
+        <div class="toolbar">
+          <button id="newProjectBtn" class="btn">+ New Project</button>
+          <button id="importProjectBtn" class="btn">Import</button>
+          <button id="exportAllBtn" class="btn">Export All</button>
+        </div>
+        <div class="project-list" id="projectList"></div>
+      </section>
+
+      <!-- Prompts View -->
+      <section class="view hidden" id="view-prompts">
+        <header class="view-header"><h2>Prompts</h2></header>
+        <div class="toolbar">
+          <button id="newPromptBtn" class="btn">+ New Prompt</button>
+          <button id="exportPromptsBtn" class="btn">Export</button>
+          <button id="importPromptsBtn" class="btn">Import</button>
+        </div>
+        <div class="prompt-list" id="promptList"></div>
+      </section>
+
+      <!-- Notes View -->
+      <section class="view hidden" id="view-notes">
+        <header class="view-header"><h2>Notes</h2></header>
+        <div class="toolbar">
+          <button id="newNoteBtn" class="btn">+ New Note</button>
+          <button id="exportNotesBtn" class="btn">Export</button>
+          <button id="importNotesBtn" class="btn">Import</button>
+        </div>
+        <div class="note-list" id="noteList"></div>
+      </section>
+
+      <!-- Context View -->
+      <section class="view hidden" id="view-context">
+        <header class="view-header"><h2>Context Library</h2></header>
+        <div class="toolbar">
+          <button id="addContextBtn" class="btn">+ Add Context</button>
+          <button id="exportContextBtn" class="btn">Export</button>
+          <button id="importContextBtn" class="btn">Import</button>
+        </div>
+        <div class="context-list" id="contextList"></div>
+      </section>
+
+      <!-- Development View -->
+      <section class="view hidden" id="view-development">
+        <header class="view-header"><h2>Development</h2></header>
+        <div class="settings-panel">
+          <h3>Coding Models</h3>
+          <div class="form-row">
+            <label>Development Platform</label>
+            <select id="developmentProvider">
+              <option value="openrouter">OpenRouter</option>
+              <option value="groq">Groq</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Groq</label>
+            <select id="groqDevelopmentModel">
+              <option value="openai/gpt-oss-20b">GPT OSS 20B</option>
+              <option value="moonshotai/kimi-k2-instruct">Kimi K2</option>
+            </select>
+            <button id="refreshGroqModelsBtn" class="btn">Refresh Groq Models</button>
+            <button id="testGroqModelBtn" class="btn">Test Groq Model</button>
+            <div id="groqModelTestResult" class="status-msg"></div>
+          </div>
+          <div class="form-row">
+            <label>OpenRouter</label>
+            <select id="openrouterDevelopmentModel">
+              <option value="qwen/qwen3-coder:free">Qwen 3 Coder (Free)</option>
+              <option value="qwen/qwen3-235b-a22b:free">Qwen 3 235B (Free)</option>
+              <option value="deepseek/deepseek-r1-0528:free">DeepSeek R1 (Free)</option>
+            </select>
+            <button id="refreshOpenRouterModelsBtn" class="btn">Refresh OpenRouter Models</button>
+            <button id="testOpenRouterModelBtn" class="btn">Test OpenRouter Model</button>
+            <div id="openrouterModelTestResult" class="status-msg"></div>
+          </div>
+          <div class="actions">
+            <button id="useDevelopmentBtn" class="btn">Open New Development Chat</button>
+          </div>
+          <div class="status-msg">Choose a platform and model above, test it, then open Development Chat.</div>
+        </div>
+      </section>
+
+      <!-- Sync View -->
+      <section class="view hidden" id="view-sync">
+        <header class="view-header"><h2>Sync & Backup</h2></header>
+        <div class="sync-panel">
+          <h3>GitHub Sync</h3>
+          <div class="form-row">
+            <label>Token</label>
+            <input type="password" id="githubToken" placeholder="ghp_..." />
+          </div>
+          <div class="form-row">
+            <label>Repo</label>
+            <input type="text" id="githubRepo" placeholder="user/repo" />
+          </div>
+          <div class="form-row">
+            <label>Branch</label>
+            <input type="text" id="githubBranch" value="main" />
+          </div>
+          <div class="actions">
+            <button id="saveGitHubBtn" class="btn">Save</button>
+            <button id="pushToGitHubBtn" class="btn">Push Now</button>
+            <button id="pullFromGitHubBtn" class="btn">Pull Now</button>
+          </div>
+          <div id="syncLog" class="log-box"></div>
+        </div>
+      </section>
+
+      <!-- Integrations View -->
+      <section class="view hidden" id="view-integrations">
+        <header class="view-header"><h2>Integrations</h2></header>
+        <div class="integration-tabs">
+          <button class="tab-btn active" data-tab="wp">WordPress</button>
+          <button class="tab-btn" data-tab="google">Google Apps</button>
+          <button class="tab-btn" data-tab="accounting">Accounting</button>
+          <button class="tab-btn" data-tab="openclaw">OpenClaw</button>
+        </div>
+
+        <div class="tab-panel active" id="tab-wp">
+          <h3>WordPress Sites</h3>
+          <div class="form-row">
+            <label>Site URL</label>
+            <input type="url" id="wpUrl" placeholder="https://yoursite.com" />
+          </div>
+          <div class="form-row">
+            <label>Username</label>
+            <input type="text" id="wpUser" placeholder="WordPress username" />
+          </div>
+          <div class="form-row">
+            <label>App Password</label>
+            <input type="password" id="wpPass" placeholder="Application password from WP Admin" />
+            <small>Generate at Users → Profile → Application Passwords</small>
+          </div>
+          <div class="actions">
+            <button id="saveWpBtn" class="btn">Save & Connect</button>
+            <button id="testWpBtn" class="btn">Test</button>
+          </div>
+          <div id="wpStatus" class="status-msg"></div>
+          <div id="wpPosts" class="post-list"></div>
+        </div>
+
+        <div class="tab-panel" id="tab-google">
+          <h3>Google Apps</h3>
+          <div class="form-row">
+            <label>OAuth Client ID</label>
+            <input type="text" id="googleClientId" placeholder="123-xxx.apps.googleusercontent.com" />
+          </div>
+          <div class="actions">
+            <button id="saveGoogleBtn" class="btn">Save Client ID</button>
+            <button id="authGoogleBtn" class="btn">Authorize Google</button>
+            <button id="revokeGoogleBtn" class="btn">Revoke</button>
+          </div>
+          <div id="googleStatus" class="status-msg"></div>
+          <div id="googleData" class="data-panel"></div>
+        </div>
+
+        <div class="tab-panel" id="tab-accounting">
+          <h3>Accounting Software</h3>
+          <div class="form-row">
+            <label>Provider</label>
+            <select id="accountingProvider">
+              <option value="">Select provider...</option>
+              <option value="wave">Wave (Free)</option>
+              <option value="manager">Manager.io (Free desktop)</option>
+              <option value="gnucash">GnuCash (Free, local)</option>
+              <option value="akaunting">Akaunting (Self-hosted)</option>
+            </select>
+          </div>
+          <div id="accountingConfig"></div>
+          <div class="actions">
+            <button id="saveAccountingBtn" class="btn">Save</button>
+          </div>
+          <div id="accountingStatus" class="status-msg"></div>
+        </div>
+
+      </section>
+
+      <!-- OpenClaw View -->
+      <section class="view hidden" id="view-openclaw">
+        <header class="view-header"><h2>OpenClaw (Local Gateway)</h2></header>
+        <div class="settings-panel">
+          <p class="hint">OpenClaw runs a local AI gateway at <code>ws://127.0.0.1:18789</code>. Set the token in Settings, then connect.</p>
+          <div class="form-row">
+            <label>Gateway URL</label>
+            <input type="url" id="openclawUrl" value="http://127.0.0.1:18789/v1" />
+          </div>
+          <div class="actions">
+            <button id="testOpenclawBtn" class="btn">Test Connection</button>
+            <button id="refreshOpenclawModelsBtn" class="btn">Refresh Models</button>
+          </div>
+          <div id="openclawStatus" class="status-msg"></div>
+          <div class="form-row">
+            <label>OpenClaw Model</label>
+            <select id="openclawViewModel">
+              <option value="openclaw">OpenClaw</option>
+              <option value="openclaw/default">OpenClaw Default</option>
+              <option value="openclaw/main">OpenClaw Main</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings View -->
+      <section class="view hidden" id="view-settings">
+        <header class="view-header"><h2>Settings</h2></header>
+        <div class="settings-panel">
+          <h3>AI Provider Keys</h3>
+          <div class="form-row">
+            <label>Kimi API Key</label>
+            <input type="password" id="kimiKey" placeholder="sk-..." />
+            <small>Get your key from <a href="https://platform.moonshot.cn/" target="_blank">platform.moonshot.cn</a></small>
+          </div>
+          <div class="form-row">
+            <label>Kimi Model</label>
+            <select id="kimiModel">
+              <option value="kimi-k3">Kimi K3 (1M ctx)</option>
+              <option value="kimi-k2.6">Kimi K2.6 (256K ctx)</option>
+              <option value="kimi-k2.5">Kimi K2.5 (256K ctx)</option>
+              <option value="kimi-k2.7-code">Kimi K2.7 Code (256K ctx)</option>
+              <option value="kimi-k2.7-code-highspeed">Kimi K2.7 Code Highspeed (256K ctx)</option>
+              <option value="moonshot-v1-128k">Moonshot v1 128K</option>
+              <option value="moonshot-v1-32k">Moonshot v1 32K</option>
+              <option value="moonshot-v1-8k">Moonshot v1 8K</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <button id="openKimiDashboardBtn" class="btn">Open Kimi Dashboard</button>
+            <button id="testKimiBtn" class="btn">Test Kimi Connection</button>
+          </div>
+          <div id="kimiStatus" class="status-msg"></div>
+          <div class="form-row">
+            <label>Groq API Key</label>
+            <input type="password" id="groqKey" placeholder="gsk_..." />
+          </div>
+          <div class="form-row">
+            <label>OpenRouter Key</label>
+            <input type="password" id="openrouterKey" placeholder="sk-or-..." />
+          </div>
+          <div class="form-row">
+            <label>OpenClaw Token</label>
+            <input type="password" id="openclawKey" placeholder="OpenClaw gateway token" />
+            <small>Local gateway: http://127.0.0.1:18789</small>
+          </div>
+          <div class="form-row">
+            <label>Groq Free Model</label>
+            <select id="groqModel">
+              <option value="openai/gpt-oss-20b">GPT OSS 20B</option>
+              <option value="moonshotai/kimi-k2-instruct">Kimi K2</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>OpenRouter Free Model</label>
+            <select id="openrouterModel">
+              <option value="qwen/qwen3-235b-a22b:free">Qwen 3 235B</option>
+              <option value="deepseek/deepseek-r1-0528:free">DeepSeek R1</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>OpenClaw Model</label>
+            <select id="openclawModel">
+              <option value="openclaw">OpenClaw</option>
+              <option value="openclaw/default">OpenClaw Default</option>
+              <option value="openclaw/main">OpenClaw Main</option>
+            </select>
+          </div>
+          <h3>Appearance</h3>
+          <div class="form-row">
+            <label>Theme</label>
+            <select id="themeSelect">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+          <div class="color-settings">
+            <h3>Custom Colors</h3>
+            <div class="color-control" data-color-var="--bg" data-color-key="colorBg">
+              <label for="colorBgPicker">Background</label>
+              <div class="color-inputs"><input type="color" id="colorBgPicker" /><input type="text" id="colorBgHex" placeholder="#081426" maxlength="7" /></div>
+              <input type="range" id="colorBgLightness" min="0" max="100" value="50" aria-label="Background lightness" />
+            </div>
+            <div class="color-control" data-color-var="--surface" data-color-key="colorSurface">
+              <label for="colorSurfacePicker">Panels</label>
+              <div class="color-inputs"><input type="color" id="colorSurfacePicker" /><input type="text" id="colorSurfaceHex" placeholder="#10233d" maxlength="7" /></div>
+              <input type="range" id="colorSurfaceLightness" min="0" max="100" value="50" aria-label="Panels lightness" />
+            </div>
+            <div class="color-control" data-color-var="--accent" data-color-key="colorAccent">
+              <label for="colorAccentPicker">Accent</label>
+              <div class="color-inputs"><input type="color" id="colorAccentPicker" /><input type="text" id="colorAccentHex" placeholder="#4ea8de" maxlength="7" /></div>
+              <input type="range" id="colorAccentLightness" min="0" max="100" value="50" aria-label="Accent lightness" />
+            </div>
+            <div class="color-control" data-color-var="--text" data-color-key="colorText">
+              <label for="colorTextPicker">Writing</label>
+              <div class="color-inputs"><input type="color" id="colorTextPicker" /><input type="text" id="colorTextHex" placeholder="#e8e8e8" maxlength="7" /></div>
+              <input type="range" id="colorTextLightness" min="0" max="100" value="50" aria-label="Writing lightness" />
+            </div>
+            <div class="color-control" data-color-var="--muted" data-color-key="colorMuted">
+              <label for="colorMutedPicker">Secondary Writing</label>
+              <div class="color-inputs"><input type="color" id="colorMutedPicker" /><input type="text" id="colorMutedHex" placeholder="#9aa7b8" maxlength="7" /></div>
+              <input type="range" id="colorMutedLightness" min="0" max="100" value="50" aria-label="Secondary writing lightness" />
+            </div>
+          </div>
+          <h3>Voice</h3>
+          <div class="form-row">
+            <label><input type="checkbox" id="voiceEnabled" /> Enable voice (Groq TTS)</label>
+          </div>
+          <div class="form-row">
+            <label><input type="checkbox" id="voiceAutoRead" /> Auto-read assistant responses</label>
+          </div>
+          <div class="actions">
+            <button id="testVoiceBtn" class="btn">Test Voice</button>
+          </div>
+          <div id="voiceStatus" class="status-msg"></div>
+          <div class="form-row">
+            <label>Voice</label>
+            <select id="voiceSelect">
+              <option value="Arista-PlayAI">Arista (Female)</option>
+              <option value="Atlas-PlayAI">Atlas (Male)</option>
+              <option value="Basil-PlayAI">Basil (Male)</option>
+              <option value="Cora-PlayAI">Cora (Female)</option>
+              <option value="Jasper-PlayAI">Jasper (Male)</option>
+              <option value="Luna-PlayAI">Luna (Female)</option>
+              <option value="Miles-PlayAI">Miles (Male)</option>
+              <option value="Orion-PlayAI">Orion (Male)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label><input type="checkbox" id="autoSync" /> Auto-sync to GitHub</label>
+          </div>
+          <div class="actions">
+            <button id="saveSettingsBtn" class="btn">Save Settings</button>
+            <button id="clearDataBtn" class="btn danger">Clear All Data</button>
+            <button id="exportDataBtn" class="btn">Export All Data</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/providers.js"></script>
+  <script src="js/github.js"></script>
+  <script src="js/context.js"></script>
+  <script src="js/prompts.js"></script>
+  <script src="js/notes.js"></script>
+  <script src="js/wordpress.js"></script>
+  <script src="js/google.js"></script>
+  <script src="js/accounting.js"></script>
+  <script src="js/openclaw.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

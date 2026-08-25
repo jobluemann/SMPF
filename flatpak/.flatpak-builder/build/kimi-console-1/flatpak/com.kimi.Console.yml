@@ -1,0 +1,28 @@
+app-id: com.kimi.Console
+runtime: org.gnome.Platform
+runtime-version: "50"
+sdk: org.gnome.Sdk
+command: kimi-console
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --socket=pulseaudio
+modules:
+  - name: kimi-console
+    buildsystem: simple
+    build-commands:
+      - cc $CFLAGS -o kimi-console flatpak/kimi-console.c $(pkg-config --cflags --libs gtk4 webkitgtk-6.0)
+      - install -Dm755 kimi-console /app/bin/kimi-console
+      - install -d /app/share/kimi-console
+      - cp -r index.html manifest.json sw.js css js /app/share/kimi-console/
+      - install -Dm644 flatpak/com.kimi.Console.desktop /app/share/applications/com.kimi.Console.desktop
+      - install -Dm644 flatpak/com.kimi.Console.svg /app/share/icons/hicolor/scalable/apps/com.kimi.Console.svg
+    sources:
+      - type: dir
+        path: ..
+    build-options:
+      env:
+        CFLAGS: "-O2 -Wall"
