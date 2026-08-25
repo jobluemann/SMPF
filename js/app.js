@@ -53,7 +53,7 @@ class App {
   }
 
   registerSW() {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
   }
@@ -323,8 +323,9 @@ class App {
   }
 
   async sendChat(text) {
+    console.log('[sendChat] provider=', this.provider, 'text=', text?.slice(0, 40));
     const input = document.getElementById('chatInput');
-    if (!text) return;
+    if (!text || !input) return;
     input.value = '';
     this.appendMsg('user', text, this.pendingFiles);
     await this.saveMessage('user', text);
@@ -351,7 +352,7 @@ class App {
     const keyMap = { kimi: 'kimiKey', groq: 'groqKey', openrouter: 'openrouterKey' };
     const key = await Settings.get(keyMap[this.provider], '');
 
-    if (!key && this.provider !== 'kimi') {
+    if (!key) {
       this.appendMsg('assistant', 'No API key set for ' + this.provider + '. Add it in Settings.');
       return;
     }

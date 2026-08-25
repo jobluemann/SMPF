@@ -6,10 +6,29 @@
   <title>AIPLATFORMFREE</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0f0f0f" />
+  <script>
+    window.addEventListener('error', (e) => {
+      console.error('[Runtime Error]', e.message, e.filename, e.lineno);
+      const box = document.getElementById('runtimeErrors');
+      if (box) {
+        box.style.display = 'block';
+        box.textContent += (box.textContent ? '\n' : '') + e.message;
+      }
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('[Unhandled Promise Rejection]', e.reason);
+      const box = document.getElementById('runtimeErrors');
+      if (box) {
+        box.style.display = 'block';
+        box.textContent += (box.textContent ? '\n' : '') + (e.reason?.message || e.reason);
+      }
+    });
+  </script>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="app">
+    <pre id="runtimeErrors" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#300;color:#fff;padding:10px;font-size:.8rem;max-height:120px;overflow:auto;"></pre>
     <aside class="sidebar" id="sidebar">
       <div class="logo">AIPLATFORMFREE</div>
       <nav class="nav">
