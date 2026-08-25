@@ -1,0 +1,8 @@
+# Flatpak build artifacts
+.flatpak-builder/
+flatpak/build-dir/
+repo/
+*.flatpak
+
+# User data
+.var/
