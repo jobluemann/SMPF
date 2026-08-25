@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=AIPLATFORMFREE
+Comment=Free AI workspace with chat, voice and integrations
+Exec=aiplatformfree-console
+Icon=com.aiplatformfree.Console
+Terminal=false
+Type=Application
+Categories=Utility;Office;
+StartupNotify=true

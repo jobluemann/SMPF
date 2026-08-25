@@ -1101,7 +1101,7 @@ class App {
     const all = {};
     for (const s of ['projects', 'prompts', 'notes', 'context', 'settings', 'messages']) all[s] = await dbGetAll(s);
     const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
-    this.download(blob, 'kimi-console-backup.json');
+    this.download(blob, 'aiplatformfree-backup.json');
   }
 
   /* ===== Utilities ===== */

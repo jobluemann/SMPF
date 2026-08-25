@@ -1,2 +1,2 @@
 #!/bin/sh
-exec /app/kimi-console/kimi-console --no-sandbox "$@"
+exec /app/aiplatformfree-console/aiplatformfree-console --no-sandbox "$@"

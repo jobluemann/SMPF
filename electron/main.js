@@ -7,6 +7,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
+    title: 'AIPLATFORMFREE',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

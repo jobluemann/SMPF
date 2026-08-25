@@ -1,8 +1,8 @@
-app-id: com.kimi.Console
+app-id: com.aiplatformfree.Console
 runtime: org.freedesktop.Platform
 runtime-version: "24.08"
 sdk: org.freedesktop.Sdk
-command: kimi-console
+command: aiplatformfree-console
 finish-args:
   - --share=network
   - --share=ipc
@@ -20,20 +20,20 @@ add-extensions:
     no-autodownload: false
     autodelete: false
 modules:
-  - name: kimi-console
+  - name: aiplatformfree-console
     buildsystem: simple
     build-commands:
-      - cp -r bundle /app/kimi-console
-      - install -Dm755 run.sh /app/bin/kimi-console
-      - install -Dm644 com.kimi.Console.desktop /app/share/applications/com.kimi.Console.desktop
-      - install -Dm644 com.kimi.Console.svg /app/share/icons/hicolor/scalable/apps/com.kimi.Console.svg
+      - cp -r bundle /app/aiplatformfree-console
+      - install -Dm755 run.sh /app/bin/aiplatformfree-console
+      - install -Dm644 com.aiplatformfree.Console.desktop /app/share/applications/com.aiplatformfree.Console.desktop
+      - install -Dm644 com.aiplatformfree.Console.svg /app/share/icons/hicolor/scalable/apps/com.aiplatformfree.Console.svg
     sources:
       - type: dir
         path: ../electron/dist/linux-unpacked
         dest: bundle
       - type: file
-        path: com.kimi.Console.desktop
+        path: com.aiplatformfree.Console.desktop
       - type: file
-        path: com.kimi.Console.svg
+        path: com.aiplatformfree.Console.svg
       - type: file
         path: run.sh

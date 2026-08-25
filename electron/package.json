@@ -1,16 +1,17 @@
 {
-  "name": "kimi-console",
-  "version": "1.1.0",
-  "description": "Kimi Console desktop app with full voice support",
+  "name": "aiplatformfree-console",
+  "version": "1.2.0",
+  "description": "AIPLATFORMFREE desktop app with chat, voice and AI integrations",
   "main": "main.js",
   "scripts": {
-    "prepare-www": "rm -rf www && mkdir -p www && cp -r ../index.html ../manifest.json ../sw.js ../css ../js www/ && cp -r ../flatpak/com.kimi.Console.svg www/", 
+    "prepare-www": "rm -rf www && mkdir -p www && cp -r ../index.html ../manifest.json ../sw.js ../css ../js www/ && cp -r ../flatpak/com.aiplatformfree.Console.svg www/",
     "start": "npm run prepare-www && electron .",
     "build": "npm run prepare-www && electron-builder --linux dir"
   },
   "build": {
-    "appId": "com.kimi.Console",
-    "productName": "Kimi Console",
+    "appId": "com.aiplatformfree.Console",
+    "productName": "AIPLATFORMFREE",
+    "executableName": "aiplatformfree-console",
     "asar": false,
     "directories": {
       "output": "dist"

@@ -50,7 +50,7 @@ async function chatCompletion(providerId, messages, apiKey, opts = {}) {
   };
   if (providerId === 'openrouter') {
     headers['HTTP-Referer'] = location.href;
-    headers['X-Title'] = 'Kimi Console';
+    headers['X-Title'] = 'AIPLATFORMFREE';
   }
 
   const body = {
