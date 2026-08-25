@@ -93,10 +93,13 @@ class App {
     document.getElementById('useDevelopmentBtn')?.addEventListener('click', () => this.openDevelopmentChat());
     document.getElementById('testGroqModelBtn')?.addEventListener('click', () => this.testDevelopmentModel('groq'));
     document.getElementById('testOpenRouterModelBtn')?.addEventListener('click', () => this.testDevelopmentModel('openrouter'));
+    document.getElementById('testKimiModelBtn')?.addEventListener('click', () => this.testDevelopmentModel('kimi'));
     document.getElementById('refreshGroqModelsBtn')?.addEventListener('click', () => this.refreshAvailableModels('groq'));
     document.getElementById('refreshOpenRouterModelsBtn')?.addEventListener('click', () => this.refreshAvailableModels('openrouter'));
+    document.getElementById('refreshKimiModelsBtn')?.addEventListener('click', () => this.refreshAvailableModels('kimi'));
+    document.getElementById('refreshKimiDevModelsBtn')?.addEventListener('click', () => this.refreshAvailableModels('kimi'));
     document.getElementById('testVoiceBtn')?.addEventListener('click', () => this.testVoice());
-    sel?.addEventListener('change', e => { this.provider = e.target.value; this.chatMode = 'normal'; updateActiveModel(); });
+    sel?.addEventListener('change', e => { this.provider = e.target.value; this.chatMode = 'normal'; updateActiveModel(); Settings.set('chatProvider', e.target.value); });
     updateActiveModel();
     document.getElementById('newChatBtn')?.addEventListener('click', () => this.startNewChat());
 
@@ -118,7 +121,7 @@ class App {
 
   async openDevelopmentChat() {
     const provider = document.getElementById('developmentProvider')?.value || 'openrouter';
-    const modelId = provider === 'groq' ? 'groqDevelopmentModel' : 'openrouterDevelopmentModel';
+    const modelId = this.modelSelectId(provider);
     const model = document.getElementById(modelId)?.value || PROVIDERS[provider].model;
     await Settings.set('developmentProvider', provider);
     await Settings.set('developmentModel', model);
@@ -144,8 +147,8 @@ class App {
   }
 
   async testDevelopmentModel(providerId) {
-    const modelId = providerId === 'groq' ? 'groqDevelopmentModel' : 'openrouterDevelopmentModel';
-    const resultId = providerId === 'groq' ? 'groqModelTestResult' : 'openrouterModelTestResult';
+    const modelId = this.modelSelectId(providerId);
+    const resultId = providerId + 'ModelTestResult';
     const result = document.getElementById(resultId);
     const model = document.getElementById(modelId)?.value;
     if (!result || !model) return;
@@ -181,17 +184,27 @@ class App {
     }
   }
 
+  modelSelectId(providerId) {
+    const map = { groq: 'groqDevelopmentModel', openrouter: 'openrouterDevelopmentModel', kimi: 'kimiDevelopmentModel' };
+    return map[providerId];
+  }
+
   async refreshAvailableModels(providerId) {
-    const selectId = providerId === 'groq' ? 'groqDevelopmentModel' : 'openrouterDevelopmentModel';
+    const selectId = this.modelSelectId(providerId);
     const select = document.getElementById(selectId);
     if (!select) return;
     const apiKey = await Settings.get(PROVIDERS[providerId].keyEnv, '');
     if (!apiKey) { select.innerHTML = '<option>API key missing</option>'; return; }
-    const models = await listModels(providerId, apiKey);
-    const available = models.filter(model => providerId !== 'openrouter' || model.id?.endsWith(':free'));
-    if (!available.length) { select.innerHTML = '<option>No models available</option>'; return; }
-    select.innerHTML = available.map(model => `<option value="${model.id}">${model.name || model.id}</option>`).join('');
-    this.providerModels[providerId] = select.value;
+    try {
+      const models = await listModels(providerId, apiKey);
+      let available = models;
+      if (providerId === 'openrouter') available = models.filter(model => model.id?.endsWith(':free'));
+      if (!available.length) { select.innerHTML = '<option>No models available</option>'; return; }
+      select.innerHTML = available.map(model => `<option value="${model.id}">${model.name || model.id}</option>`).join('');
+      this.providerModels[providerId] = select.value;
+    } catch (error) {
+      select.innerHTML = `<option>Error: ${error.message}</option>`;
+    }
   }
 
   async testVoice() {
@@ -923,6 +936,7 @@ class App {
     document.getElementById('voiceSelect')?.addEventListener('change', e => { this.voice.voice = e.target.value; });
     document.getElementById('kimiModel')?.addEventListener('change', e => { this.providerModels.kimi = e.target.value; });
     document.getElementById('testKimiBtn')?.addEventListener('click', () => this.testKimi());
+    document.getElementById('refreshKimiModelsBtn')?.addEventListener('click', () => this.refreshAvailableModels('kimi'));
     document.getElementById('openKimiDashboardBtn')?.addEventListener('click', () => window.open('https://platform.moonshot.cn/', '_blank'));
     document.getElementById('groqModel')?.addEventListener('change', e => { this.providerModels.groq = e.target.value; });
     document.getElementById('openrouterModel')?.addEventListener('change', e => { this.providerModels.openrouter = e.target.value; });
@@ -976,6 +990,10 @@ class App {
     this.lastUsedModel = await Settings.get('lastUsedModel', 'None yet');
     const lastUsedModel = document.getElementById('lastUsedModel');
     if (lastUsedModel) lastUsedModel.textContent = 'Last used: ' + this.lastUsedModel;
+    const savedProvider = await Settings.get('chatProvider', 'groq');
+    this.provider = PROVIDERS[savedProvider] ? savedProvider : 'groq';
+    const providerSelect = document.getElementById('providerSelect');
+    if (providerSelect) providerSelect.value = this.provider;
     document.getElementById('kimiKey').value = await Settings.get('kimiKey', '');
     document.getElementById('groqKey').value = await Settings.get('groqKey', '');
     document.getElementById('openrouterKey').value = await Settings.get('openrouterKey', '');
@@ -998,12 +1016,13 @@ class App {
     const activeModel = document.getElementById('activeModel');
     if (activeModel) activeModel.textContent = `${this.provider}: ${this.providerModels[this.provider]}`;
     const savedDevelopmentProvider = await Settings.get('developmentProvider', 'openrouter');
-    this.developmentProvider = PROVIDERS[savedDevelopmentProvider] && savedDevelopmentProvider !== 'kimi' ? savedDevelopmentProvider : 'openrouter';
+    this.developmentProvider = PROVIDERS[savedDevelopmentProvider] ? savedDevelopmentProvider : 'openrouter';
     const savedDevelopmentModel = await Settings.get('developmentModel', PROVIDERS[this.developmentProvider].model);
     this.developmentModel = PROVIDERS[this.developmentProvider].models.includes(savedDevelopmentModel) ? savedDevelopmentModel : PROVIDERS[this.developmentProvider].model;
     document.getElementById('developmentProvider').value = this.developmentProvider;
     document.getElementById('groqDevelopmentModel').value = PROVIDERS.groq.models.includes(this.developmentModel) ? this.developmentModel : PROVIDERS.groq.model;
     document.getElementById('openrouterDevelopmentModel').value = PROVIDERS.openrouter.models.includes(this.developmentModel) ? this.developmentModel : PROVIDERS.openrouter.model;
+    document.getElementById('kimiDevelopmentModel').value = PROVIDERS.kimi.models.includes(this.developmentModel) ? this.developmentModel : PROVIDERS.kimi.model;
     document.getElementById('githubToken').value = await Settings.get('githubToken', '');
     document.getElementById('githubRepo').value = await Settings.get('githubRepo', '');
     document.getElementById('githubBranch').value = await Settings.get('githubBranch', 'main');

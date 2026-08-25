@@ -107,6 +107,7 @@
             <select id="developmentProvider">
               <option value="openrouter">OpenRouter</option>
               <option value="groq">Groq</option>
+              <option value="kimi">Kimi</option>
             </select>
           </div>
           <div class="form-row">
@@ -129,6 +130,22 @@
             <button id="refreshOpenRouterModelsBtn" class="btn">Refresh OpenRouter Models</button>
             <button id="testOpenRouterModelBtn" class="btn">Test OpenRouter Model</button>
             <div id="openrouterModelTestResult" class="status-msg"></div>
+          </div>
+          <div class="form-row">
+            <label>Kimi</label>
+            <select id="kimiDevelopmentModel">
+              <option value="moonshot-v1-128k">Moonshot v1 128K</option>
+              <option value="moonshot-v1-32k">Moonshot v1 32K</option>
+              <option value="moonshot-v1-8k">Moonshot v1 8K</option>
+              <option value="kimi-k2.5">Kimi K2.5 (256K ctx)</option>
+              <option value="kimi-k2.6">Kimi K2.6 (256K ctx)</option>
+              <option value="kimi-k2.7-code">Kimi K2.7 Code (256K ctx)</option>
+              <option value="kimi-k2.7-code-highspeed">Kimi K2.7 Code Highspeed (256K ctx)</option>
+              <option value="kimi-k3">Kimi K3 (1M ctx)</option>
+            </select>
+            <button id="refreshKimiDevModelsBtn" class="btn">Refresh Kimi Models</button>
+            <button id="testKimiModelBtn" class="btn">Test Kimi Model</button>
+            <div id="kimiModelTestResult" class="status-msg"></div>
           </div>
           <div class="actions">
             <button id="useDevelopmentBtn" class="btn">Open New Development Chat</button>
@@ -270,19 +287,20 @@
           <div class="form-row">
             <label>Kimi Model</label>
             <select id="kimiModel">
-              <option value="kimi-k3">Kimi K3 (1M ctx)</option>
-              <option value="kimi-k2.6">Kimi K2.6 (256K ctx)</option>
-              <option value="kimi-k2.5">Kimi K2.5 (256K ctx)</option>
-              <option value="kimi-k2.7-code">Kimi K2.7 Code (256K ctx)</option>
-              <option value="kimi-k2.7-code-highspeed">Kimi K2.7 Code Highspeed (256K ctx)</option>
               <option value="moonshot-v1-128k">Moonshot v1 128K</option>
               <option value="moonshot-v1-32k">Moonshot v1 32K</option>
               <option value="moonshot-v1-8k">Moonshot v1 8K</option>
+              <option value="kimi-k2.5">Kimi K2.5 (256K ctx)</option>
+              <option value="kimi-k2.6">Kimi K2.6 (256K ctx)</option>
+              <option value="kimi-k2.7-code">Kimi K2.7 Code (256K ctx)</option>
+              <option value="kimi-k2.7-code-highspeed">Kimi K2.7 Code Highspeed (256K ctx)</option>
+              <option value="kimi-k3">Kimi K3 (1M ctx)</option>
             </select>
           </div>
           <div class="form-row">
             <button id="openKimiDashboardBtn" class="btn">Open Kimi Dashboard</button>
             <button id="testKimiBtn" class="btn">Test Kimi Connection</button>
+            <button id="refreshKimiModelsBtn" class="btn">Refresh Kimi Models</button>
           </div>
           <div id="kimiStatus" class="status-msg"></div>
           <div class="form-row">

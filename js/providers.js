@@ -6,8 +6,8 @@ const PROVIDERS = {
   kimi: {
     name: 'Kimi',
     base: 'https://api.moonshot.cn/v1',
-    model: 'kimi-k3',
-    models: ['kimi-k3', 'kimi-k2.6', 'kimi-k2.5', 'kimi-k2.7-code', 'kimi-k2.7-code-highspeed', 'moonshot-v1-128k', 'moonshot-v1-32k', 'moonshot-v1-8k'],
+    model: 'moonshot-v1-128k',
+    models: ['moonshot-v1-128k', 'moonshot-v1-32k', 'moonshot-v1-8k', 'kimi-k2.5', 'kimi-k2.6', 'kimi-k2.7-code', 'kimi-k2.7-code-highspeed', 'kimi-k3'],
     keyEnv: 'kimiKey'
   },
   groq: {
