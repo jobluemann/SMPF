@@ -1,6 +1,6 @@
 {
-  "name": "AIPLATFORMFREE",
-  "short_name": "AIPF",
+  "name": "SMPF",
+  "short_name": "SMPF",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0f0f0f",

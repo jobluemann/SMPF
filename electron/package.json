@@ -1,7 +1,7 @@
 {
   "name": "aiplatformfree-console",
-  "version": "1.2.0",
-  "description": "AIPLATFORMFREE desktop app with chat, voice and AI integrations",
+  "version": "1.3.0",
+  "description": "SMPF desktop app with chat, voice and AI integrations",
   "main": "main.js",
   "scripts": {
     "prepare-www": "rm -rf www && mkdir -p www && cp -r ../index.html ../manifest.json ../sw.js ../css ../js www/ && cp -r ../flatpak/com.aiplatformfree.Console.svg www/",
