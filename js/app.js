@@ -184,6 +184,74 @@ class App {
     }
   }
 
+  kimiLogin() {
+    // Open the Kimi account/login page in the system browser so the user can
+    // copy a fresh API key, then paste it into the Settings field and save.
+    window.open('https://platform.moonshot.cn/login?redirect=/console/api-keys', '_blank');
+    const status = document.getElementById('kimiStatus');
+    if (status) {
+      status.textContent = 'After logging in, copy your API key and paste it above, then click Save Settings.';
+      status.className = 'status-msg';
+    }
+  }
+
+  async loadKeyFile() {
+    if (!window.electronAPI) {
+      alert('Key file loading is only available in the desktop app.');
+      return;
+    }
+    try {
+      const data = await window.electronAPI.readConfig();
+      const path = await window.electronAPI.getUserDataPath();
+      const status = document.getElementById('keysFilePath');
+      if (!data) {
+        if (status) { status.textContent = 'No keys.json found at ' + path; status.className = 'status-msg err'; }
+        return;
+      }
+      const keys = ['kimiKey', 'groqKey', 'openrouterKey', 'openclawKey'];
+      let loaded = [];
+      for (const k of keys) {
+        if (data[k]) {
+          await Settings.set(k, data[k]);
+          const el = document.getElementById(k);
+          if (el) el.value = data[k];
+          loaded.push(k.replace('Key', ''));
+        }
+      }
+      await this.voice.setKey(await Settings.get('groqKey', ''));
+      if (status) { status.textContent = `Loaded keys from ${path}: ${loaded.join(', ') || 'none'}`; status.className = 'status-msg ok'; }
+    } catch (e) {
+      const status = document.getElementById('keysFilePath');
+      if (status) { status.textContent = 'Error loading keys file: ' + e.message; status.className = 'status-msg err'; }
+    }
+  }
+
+  async saveKeyFile() {
+    if (!window.electronAPI) {
+      alert('Key file saving is only available in the desktop app.');
+      return;
+    }
+    try {
+      const data = {
+        kimiKey: document.getElementById('kimiKey')?.value || '',
+        groqKey: document.getElementById('groqKey')?.value || '',
+        openrouterKey: document.getElementById('openrouterKey')?.value || '',
+        openclawKey: document.getElementById('openclawKey')?.value || ''
+      };
+      const ok = await window.electronAPI.writeConfig(data);
+      const path = await window.electronAPI.getUserDataPath();
+      const status = document.getElementById('keysFilePath');
+      if (ok) {
+        if (status) { status.textContent = `Keys saved to ${path}/keys.json`; status.className = 'status-msg ok'; }
+      } else {
+        if (status) { status.textContent = 'Failed to write keys file.'; status.className = 'status-msg err'; }
+      }
+    } catch (e) {
+      const status = document.getElementById('keysFilePath');
+      if (status) { status.textContent = 'Error saving keys file: ' + e.message; status.className = 'status-msg err'; }
+    }
+  }
+
   modelSelectId(providerId) {
     const map = { groq: 'groqDevelopmentModel', openrouter: 'openrouterDevelopmentModel', kimi: 'kimiDevelopmentModel' };
     return map[providerId];
@@ -349,11 +417,11 @@ class App {
     }
     messages.push(...boundedMessages);
 
-    const keyMap = { kimi: 'kimiKey', groq: 'groqKey', openrouter: 'openrouterKey' };
+    const keyMap = { kimi: 'kimiKey', groq: 'groqKey', openrouter: 'openrouterKey', openclaw: 'openclawKey' };
     const key = await Settings.get(keyMap[this.provider], '');
 
     if (!key) {
-      this.appendMsg('assistant', 'No API key set for ' + this.provider + '. Add it in Settings.');
+      this.appendMsg('assistant', 'No API key set for ' + this.provider + '. Add it in Settings, or create ' + (window.electronAPI ? 'keys.json via Save Keys to File.' : 'and save one.'));
       return;
     }
 
@@ -939,6 +1007,9 @@ class App {
     document.getElementById('testKimiBtn')?.addEventListener('click', () => this.testKimi());
     document.getElementById('refreshKimiModelsBtn')?.addEventListener('click', () => this.refreshAvailableModels('kimi'));
     document.getElementById('openKimiDashboardBtn')?.addEventListener('click', () => window.open('https://platform.moonshot.cn/', '_blank'));
+    document.getElementById('kimiLoginBtn')?.addEventListener('click', () => this.kimiLogin());
+    document.getElementById('loadKeysFileBtn')?.addEventListener('click', () => this.loadKeyFile());
+    document.getElementById('saveKeysFileBtn')?.addEventListener('click', () => this.saveKeyFile());
     document.getElementById('groqModel')?.addEventListener('change', e => { this.providerModels.groq = e.target.value; });
     document.getElementById('openrouterModel')?.addEventListener('change', e => { this.providerModels.openrouter = e.target.value; });
     document.getElementById('openclawModel')?.addEventListener('change', e => { this.providerModels.openclaw = e.target.value; });
@@ -1001,6 +1072,11 @@ class App {
     document.getElementById('openclawKey').value = await Settings.get('openclawKey', '');
     document.getElementById('openclawUrl').value = await Settings.get('openclawUrl', PROVIDERS.openclaw.base);
     PROVIDERS.openclaw.base = document.getElementById('openclawUrl').value || PROVIDERS.openclaw.base;
+
+    // Load keys from the local keys.json file (desktop only). This overrides
+    // whatever was previously saved in IndexedDB so you never have to paste keys.
+    if (window.electronAPI) await this.loadKeyFile();
+
     const savedKimiModel = await Settings.get('kimiModel', PROVIDERS.kimi.model);
     const savedGroqModel = await Settings.get('groqModel', PROVIDERS.groq.model);
     const savedOpenRouterModel = await Settings.get('openrouterModel', PROVIDERS.openrouter.model);

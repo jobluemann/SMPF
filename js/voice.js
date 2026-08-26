@@ -116,11 +116,94 @@ class SpeechToText {
   }
 }
 
+/* ===== Groq Whisper STT ===== */
+class GroqSTT {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.base = 'https://api.groq.com/openai/v1';
+    this.mediaRecorder = null;
+    this.chunks = [];
+    this.stream = null;
+    this.isListening = false;
+    this.onResult = null;
+    this.onEnd = null;
+    this.onError = null;
+  }
+
+  async start(onResult, onEnd, onError) {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      if (onError) onError('Microphone access is not available in this app runtime.');
+      return false;
+    }
+    this.onResult = onResult;
+    this.onEnd = onEnd;
+    this.onError = onError;
+    this.chunks = [];
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+      this.mediaRecorder = new MediaRecorder(this.stream, { mimeType });
+      this.mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) this.chunks.push(e.data); };
+      this.mediaRecorder.onstop = () => this._transcribe();
+      this.mediaRecorder.onerror = (e) => { this._cleanup(); if (onError) onError('Recorder error: ' + e.message); };
+      this.mediaRecorder.start(250);
+      this.isListening = true;
+      if (onResult) onResult('', 'Listening...');
+      return true;
+    } catch (e) {
+      if (onError) onError('Microphone error: ' + e.message);
+      return false;
+    }
+  }
+
+  stop() {
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.mediaRecorder.stop();
+    } else {
+      this._cleanup();
+    }
+  }
+
+  async _transcribe() {
+    this.isListening = false;
+    if (!this.chunks.length) { this._cleanup(); if (this.onEnd) this.onEnd(''); return; }
+    const blob = new Blob(this.chunks, { type: this.mediaRecorder?.mimeType || 'audio/webm' });
+    this._cleanup();
+    try {
+      const form = new FormData();
+      form.append('file', blob, 'recording.webm');
+      form.append('model', 'whisper-large-v3');
+      form.append('response_format', 'json');
+      const res = await fetch(this.base + '/audio/transcriptions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + this.apiKey },
+        body: form
+      });
+      if (!res.ok) throw new Error((await res.text().catch(() => res.statusText)));
+      const data = await res.json();
+      const text = data.text || '';
+      if (this.onEnd) this.onEnd(text);
+    } catch (e) {
+      if (this.onError) this.onError('Groq transcription failed: ' + e.message);
+    }
+  }
+
+  _cleanup() {
+    if (this.stream) {
+      this.stream.getTracks().forEach(t => t.stop());
+      this.stream = null;
+    }
+    this.mediaRecorder = null;
+    this.isListening = false;
+  }
+}
+
 /* ===== Voice Manager ===== */
 class VoiceManager {
   constructor() {
     this.tts = null;
     this.stt = new SpeechToText();
+    this.groqStt = null;
     this.enabled = false;
     this.autoRead = false;
     this.voice = 'Arista-PlayAI';
@@ -132,7 +215,10 @@ class VoiceManager {
     this.enabled = await Settings.get('voiceEnabled', false);
     this.autoRead = await Settings.get('voiceAutoRead', false);
     this.voice = await Settings.get('voiceChoice', 'Arista-PlayAI');
-    if (this.groqKey) this.tts = new GroqTTS(this.groqKey);
+    if (this.groqKey) {
+      this.tts = new GroqTTS(this.groqKey);
+      this.groqStt = new GroqSTT(this.groqKey);
+    }
   }
 
   async saveSettings() {
@@ -144,6 +230,7 @@ class VoiceManager {
   setKey(key) {
     this.groqKey = key;
     this.tts = key ? new GroqTTS(key) : null;
+    this.groqStt = key ? new GroqSTT(key) : null;
   }
 
   async speak(text) {
@@ -173,8 +260,14 @@ class VoiceManager {
   }
 
   startListening(onResult, onEnd, onError) {
+    // Prefer Groq Whisper STT when a Groq key is available because it works
+    // reliably inside the Electron flatpak. Fall back to browser-native
+    // SpeechRecognition if Groq is not configured.
+    if (this.groqStt) {
+      return this.groqStt.start(onResult, onEnd, onError);
+    }
     if (!this.stt.available) {
-      const msg = 'Speech recognition is not available in this app runtime. It works in Chrome/Edge but not in the WebKit-based flatpak desktop build.';
+      const msg = 'Speech recognition is not available. Add a Groq key in Settings to use Groq Whisper, or use this app in a browser that supports SpeechRecognition.';
       if (onError) onError(msg);
       return false;
     }
@@ -185,12 +278,13 @@ class VoiceManager {
   }
 
   stopListening() {
+    if (this.groqStt) this.groqStt.stop();
     this.stt.stop();
   }
 
-  get isListening() { return this.stt.isListening; }
+  get isListening() { return this.groqStt?.isListening || this.stt.isListening; }
   get isSpeaking() { return this.tts?.isPlaying || window.speechSynthesis?.speaking || false; }
-  get sttAvailable() { return this.stt.available; }
+  get sttAvailable() { return !!this.groqStt || this.stt.available; }
 }
 
 const VOICES = [

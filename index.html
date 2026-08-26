@@ -28,7 +28,7 @@
 </head>
 <body>
   <div id="app">
-    <pre id="runtimeErrors" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#300;color:#fff;padding:10px;font-size:.8rem;max-height:120px;overflow:auto;"></pre>
+    <pre id="runtimeErrors" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#300;color:#fff;padding:10px;font-size:.8rem;max-height:120px;overflow:auto;pointer-events:none;"></pre>
     <aside class="sidebar" id="sidebar">
       <div class="logo">AIPLATFORMFREE</div>
       <nav class="nav">
@@ -66,7 +66,7 @@
         <div class="chat-input-row">
           <input type="file" id="fileInput" multiple hidden />
           <button id="attachBtn" class="icon-btn" title="Attach files">📎</button>
-          <textarea id="chatInput" placeholder="Message..." rows="1"></textarea>
+          <textarea id="chatInput" placeholder="Message..." rows="1" autofocus></textarea>
           <button id="micBtn" class="icon-btn" title="Voice input">🎙️</button>
           <button id="sendBtn" class="icon-btn" title="Send">➤</button>
         </div>
@@ -303,6 +303,12 @@
             <input type="password" id="kimiKey" placeholder="sk-..." />
             <small>Get your key from <a href="https://platform.moonshot.cn/" target="_blank">platform.moonshot.cn</a></small>
           </div>
+          <div class="form-row">
+            <button id="kimiLoginBtn" class="btn">Log in to Kimi Account</button>
+            <button id="loadKeysFileBtn" class="btn">Load Keys from File</button>
+            <button id="saveKeysFileBtn" class="btn">Save Keys to File</button>
+          </div>
+          <div id="keysFilePath" class="status-msg"></div>
           <div class="form-row">
             <label>Kimi Model</label>
             <select id="kimiModel">
