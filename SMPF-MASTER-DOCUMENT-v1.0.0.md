@@ -204,11 +204,14 @@ Landing Page → Register → Verify Email → Login → Dashboard
 | **Enterprise** | Everything + AI Voice | Unlimited | Custom | ✅ |
 
 ### 6.3 Authentication Requirements
+- Any email address accepted, including free providers (Gmail, Outlook/Hotmail, Yahoo)
+- New accounts must confirm their email via a verification link before they can log in
 - Minimum 12-character password
-- No free email providers (Gmail, Yahoo, etc.) — work domain required
-- Warning disclaimer if free email used
-- Two-factor recovery via secondary work email
-- No social-login (security requirement)
+- Account recovery via a secondary email address
+- No social login (security requirement)
+- Marketing agencies may register accounts on behalf of clients, in the client's own name and email
+- The verification link always goes to the client; confirming it activates the account AND grants the agency delegated management access
+- The client can revoke the agency's access at any time from their own dashboard
 
 ### 6.4 Payment Methods
 - **Tips/Donations**: PayPal, Ko-fi, Buy Me a Coffee, BTC, ETH (floating banner)
