@@ -248,7 +248,8 @@ def validate_connection(local_user_id: str) -> dict:
         return {"status": "not_connected", "platform": "facebook"}
     try:
         resp = requests.get(
-            f"https://graph.facebook.com/me?access_token={conn['access_token']}",
+            "https://graph.facebook.com/me",
+            params={"access_token": conn.get("user_access_token") or conn.get("access_token", "")},
             timeout=10,
         )
         if resp.ok:
@@ -256,5 +257,5 @@ def validate_connection(local_user_id: str) -> dict:
             return {"status": "ok", "platform": "facebook", "name": data.get("name")}
         return {"status": "error", "platform": "facebook", "error": f"HTTP {resp.status_code}: {resp.text[:200]}"}
     except Exception as exc:
-        return {"status": "error", "platform": "facebook", "error": str(exc)}
+        return {"status": "error", "platform": "facebook", "error": type(exc).__name__}
 
