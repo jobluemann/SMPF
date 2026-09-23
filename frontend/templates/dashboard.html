@@ -1,0 +1,466 @@
+<!-- SMPF v6 — frontend/templates/dashboard.html — 2026-08-27 -->
+<!-- Added: WhatsApp groups manager, test post UI for multiple platforms. -->
+{% extends "base.html" %}
+{% block title %}Dashboard — SMPF{% endblock %}
+{% block content %}
+<nav>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/status">Status</a>
+    <a href="/logout">Log out</a>
+</nav>
+<h1>Welcome, {{ user_email }}</h1>
+
+<div class="card">
+    <h2 style="margin-top:0;">Connected accounts</h2>
+    {% for name, path, status in connectors %}
+    <div class="connector-row">
+        <span>{{ name }}</span>
+        {% if status == "connected" %}
+            {% if name == "Threads" %}
+            <div>
+                <span class="status-limited" title="Text posts work. Images require a public CDN (Oracle IP blocked by Meta CDN)." style="cursor:help;">Connected ⚠️</span>
+                <form method="post" action="/connectors/{{ path }}/disconnect" style="display:inline;margin-left:8px;">
+                    <button type="submit" class="btn-link" style="background:#b91c1c;font-size:0.8rem;padding:4px 10px;">Disconnect</button>
+                </form>
+            </div>
+            {% elif name == "X (Twitter)" %}
+            <div>
+                <span class="status-connected" title="Connected via OAuth 1.0a (permanent tokens)">Connected ✅</span>
+                <form method="post" action="/connectors/{{ path }}/disconnect" style="display:inline;margin-left:8px;">
+                    <button type="submit" class="btn-link" style="background:#b91c1c;font-size:0.8rem;padding:4px 10px;">Disconnect</button>
+                </form>
+            </div>
+            {% else %}
+            <div>
+                <span class="status-connected">Connected</span>
+                <form method="post" action="/connectors/{{ path }}/disconnect" style="display:inline;margin-left:8px;">
+                    <button type="submit" class="btn-link" style="background:#b91c1c;font-size:0.8rem;padding:4px 10px;">Disconnect</button>
+                </form>
+            </div>
+            {% endif %}
+        {% else %}
+            <a class="btn-link" href="/connectors/{{ path }}/start">Connect</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">Platform overview</h2>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+            <canvas id="connectionsChart"></canvas>
+        </div>
+        <div style="flex:1;min-width:260px;">
+            <canvas id="contentChart"></canvas>
+        </div>
+    </div>
+    <div id="stats-summary" style="margin-top:16px;font-size:0.95rem;"></div>
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">Recent generated content</h2>
+    <div id="recent-content" style="display:flex;gap:12px;flex-wrap:wrap;"></div>
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">Generate a meme</h2>
+    <label for="meme-prompt">Describe the image</label>
+    <input type="text" id="meme-prompt" placeholder="a cat wearing sunglasses, cartoon style">
+    <button onclick="generateMeme()">Generate</button>
+    <div id="meme-result" style="margin-top:16px;"></div>
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">Generate voice (Orpheus)</h2>
+    <label for="voice-text">Text to speak</label>
+    <textarea id="voice-text" rows="3" placeholder="Type what you want read aloud"></textarea>
+    <label for="voice-name">Voice</label>
+    <select id="voice-name">
+        <option value="autumn">autumn</option>
+        <option value="diana">diana</option>
+        <option value="hannah">hannah</option>
+        <option value="austin">austin</option>
+        <option value="daniel">daniel</option>
+        <option value="troy">troy</option>
+    </select>
+    <button onclick="generateVoice()">Generate</button>
+    <div id="voice-result" style="margin-top:16px;"></div>
+</div>
+
+<!-- WhatsApp Groups Manager -->
+<div class="card" id="wa-groups-card" style="display:none;">
+    <h2 style="margin-top:0;">📱 WhatsApp Groups <span id="wa-health-badge" style="font-size:0.7rem;padding:2px 8px;border-radius:12px;background:#e9ecef;color:#666;margin-left:8px;vertical-align:middle;">checking…</span></h2>
+    <div id="wa-groups-list" style="margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;">
+        <input type="text" id="wa-new-group" placeholder="Exact group name from WhatsApp" style="flex:1;">
+        <button onclick="addWhatsAppGroup()" style="background:#1e7e34;">＋ Add</button>
+    </div>
+    <div id="wa-groups-msg" style="margin-top:8px;font-size:0.85rem;"></div>
+</div>
+
+<div class="card">
+    <h2 style="margin-top:0;">🚀 Test post to connected platforms</h2>
+    <label for="post-text">Post text</label>
+    <textarea id="post-text" rows="3" placeholder="Type what you want to post…"></textarea>
+
+    <label for="post-image-url">Image URL (required for Instagram)</label>
+    <input type="text" id="post-image-url" placeholder="https://example.com/image.jpg">
+
+    <div id="wa-post-groups" style="margin:12px 0;display:none;">
+        <label style="font-weight:600;">WhatsApp groups to post to:</label>
+        <div id="wa-post-checkboxes" style="margin-top:6px;"></div>
+    </div>
+
+    <div id="tg-post-chat" style="margin:12px 0;display:none;">
+        <label for="post-telegram-chat" style="font-weight:600;">Telegram chat ID or @username:</label>
+        <input type="text" id="post-telegram-chat" placeholder="-123456789 or @mychannel" style="margin-top:4px;">
+        <div style="margin-top:6px;">
+            <button type="button" onclick="discoverTelegramChats()" style="background:#6c757d;font-size:0.8rem;padding:4px 10px;">🔍 Discover chats</button>
+            <span id="tg-discover-result" style="font-size:0.85rem;margin-left:8px;"></span>
+        </div>
+    </div>
+
+    <div style="margin:12px 0;">
+        <label style="display:inline-flex;align-items:center;margin-right:16px;cursor:pointer;">
+            <input type="checkbox" id="post-x" value="x" style="margin-right:6px;"> X (Twitter)
+        </label>
+        <label style="display:inline-flex;align-items:center;margin-right:16px;cursor:pointer;">
+            <input type="checkbox" id="post-facebook" value="facebook" style="margin-right:6px;"> Facebook
+        </label>
+        <label style="display:inline-flex;align-items:center;margin-right:16px;cursor:pointer;">
+            <input type="checkbox" id="post-instagram" value="instagram" style="margin-right:6px;"> Instagram
+        </label>
+        <label style="display:inline-flex;align-items:center;margin-right:16px;cursor:pointer;">
+            <input type="checkbox" id="post-threads" value="threads" style="margin-right:6px;"> Threads
+        </label>
+        <label style="display:inline-flex;align-items:center;margin-right:16px;cursor:pointer;">
+            <input type="checkbox" id="post-linkedin" value="linkedin" style="margin-right:6px;"> LinkedIn
+        </label>
+        <label style="display:inline-flex;align-items:center;margin-right:16px;cursor:pointer;">
+            <input type="checkbox" id="post-telegram" value="telegram" style="margin-right:6px;" onchange="toggleTelegramChat()"> Telegram
+        </label>
+        <label style="display:inline-flex;align-items:center;cursor:pointer;">
+            <input type="checkbox" id="post-whatsapp" value="whatsapp" style="margin-right:6px;" onchange="toggleWhatsAppGroups()"> WhatsApp
+        </label>
+    </div>
+
+    <button onclick="sendPost()">Post now</button>
+    <div id="post-result" style="margin-top:16px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// ─── WhatsApp Health Pulse ────────────────────────────────────────────────
+async function checkWhatsAppHealth() {
+    const badge = document.getElementById('wa-health-badge');
+    if (!badge) return;
+    try {
+        badge.textContent = 'checking…';
+        badge.style.background = '#e9ecef';
+        badge.style.color = '#666';
+        const resp = await fetch('/api/whatsapp/health');
+        const data = await resp.json();
+        if (data.health === 'healthy') {
+            badge.textContent = '● healthy';
+            badge.style.background = '#d4edda';
+            badge.style.color = '#155724';
+        } else if (data.health === 'dead') {
+            badge.textContent = '● session expired — reconnect';
+            badge.style.background = '#f8d7da';
+            badge.style.color = '#721c24';
+            // Hide groups card since session is dead
+            document.getElementById('wa-groups-card').style.display = 'none';
+        } else {
+            badge.textContent = '● unknown';
+            badge.style.background = '#fff3cd';
+            badge.style.color = '#856404';
+        }
+    } catch (e) {
+        badge.textContent = '● offline';
+        badge.style.background = '#f8d7da';
+        badge.style.color = '#721c24';
+    }
+}
+
+// ─── Load WhatsApp groups on page load ────────────────────────────────────
+let _waGroups = [];
+
+async function loadWhatsAppGroups() {
+    try {
+        const resp = await fetch('/api/whatsapp/groups');
+        const data = await resp.json();
+        _waGroups = data.groups || [];
+        renderWhatsAppGroups();
+        renderWhatsAppPostCheckboxes();
+        // Show groups card if WhatsApp is connected (any status besides not_connected)
+        const waConnected = _waGroups.length > 0 || true; // card always shows once loaded
+        document.getElementById('wa-groups-card').style.display = 'block';
+    } catch (e) {
+        console.error('Failed to load WhatsApp groups:', e);
+    }
+}
+
+function renderWhatsAppGroups() {
+    const div = document.getElementById('wa-groups-list');
+    if (!_waGroups.length) {
+        div.innerHTML = '<span style="color:#999;">No groups saved yet. Add one below.</span>';
+        return;
+    }
+    let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
+    _waGroups.forEach(g => {
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;background:#f8f9fa;padding:8px 12px;border-radius:6px;">
+            <span style="font-weight:500;">${escapeHtml(g.name)}</span>
+            <button onclick="removeWhatsAppGroup('${g.id}')" style="background:#b91c1c;font-size:0.75rem;padding:3px 8px;">Remove</button>
+        </div>`;
+    });
+    html += '</div>';
+    div.innerHTML = html;
+}
+
+function renderWhatsAppPostCheckboxes() {
+    const div = document.getElementById('wa-post-checkboxes');
+    if (!_waGroups.length) {
+        div.innerHTML = '<span style="color:#999;font-size:0.85rem;">No saved groups. Add groups in the card above first.</span>';
+        return;
+    }
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:10px;">';
+    _waGroups.forEach(g => {
+        html += `<label style="display:inline-flex;align-items:center;cursor:pointer;background:#f0f0f0;padding:4px 10px;border-radius:16px;font-size:0.9rem;">
+            <input type="checkbox" class="wa-post-group-cb" value="${escapeHtml(g.name)}" style="margin-right:6px;"> ${escapeHtml(g.name)}
+        </label>`;
+    });
+    html += '</div>';
+    div.innerHTML = html;
+}
+
+function toggleWhatsAppGroups() {
+    const checked = document.getElementById('post-whatsapp').checked;
+    const div = document.getElementById('wa-post-groups');
+    div.style.display = checked ? 'block' : 'none';
+}
+
+function toggleTelegramChat() {
+    const checked = document.getElementById('post-telegram').checked;
+    const div = document.getElementById('tg-post-chat');
+    div.style.display = checked ? 'block' : 'none';
+}
+
+async function discoverTelegramChats() {
+    const resultSpan = document.getElementById('tg-discover-result');
+    resultSpan.innerHTML = 'Checking…';
+    try {
+        const resp = await fetch('/api/telegram/updates');
+        const data = await resp.json();
+        if (!data.chats || !data.chats.length) {
+            resultSpan.innerHTML = '<span style="color:#856404;">No recent chats found. Add the bot to a group and send a message first.</span>';
+            return;
+        }
+        let html = '<div style="margin-top:8px;">';
+        data.chats.forEach(c => {
+            html += `<button type="button" onclick="document.getElementById('post-telegram-chat').value='${c.chat_id}'" style="margin:2px;font-size:0.8rem;padding:3px 8px;background:#e9ecef;border:1px solid #ced4da;border-radius:4px;cursor:pointer;">${c.title} (${c.chat_id})</button>`;
+        });
+        html += '</div>';
+        resultSpan.innerHTML = html;
+    } catch (e) {
+        resultSpan.innerHTML = '<span style="color:#b91c1c;">' + e.message + '</span>';
+    }
+}
+
+async function addWhatsAppGroup() {
+    const input = document.getElementById('wa-new-group');
+    const name = input.value.trim();
+    const msgDiv = document.getElementById('wa-groups-msg');
+    if (!name) { msgDiv.innerHTML = '<span style="color:#b91c1c;">Enter a group name.</span>'; return; }
+    msgDiv.innerHTML = 'Adding…';
+    try {
+        const resp = await fetch('/api/whatsapp/groups', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({name})
+        });
+        const data = await resp.json();
+        if (!resp.ok) { msgDiv.innerHTML = '<span style="color:#b91c1c;">' + (data.detail || 'Failed') + '</span>'; return; }
+        input.value = '';
+        msgDiv.innerHTML = '<span style="color:#1e7e34;">Added!</span>';
+        await loadWhatsAppGroups();
+    } catch (e) {
+        msgDiv.innerHTML = '<span style="color:#b91c1c;">' + e.message + '</span>';
+    }
+}
+
+async function removeWhatsAppGroup(groupId) {
+    if (!confirm('Remove this group?')) return;
+    try {
+        const resp = await fetch('/api/whatsapp/groups/' + encodeURIComponent(groupId), {method: 'DELETE'});
+        if (resp.ok) await loadWhatsAppGroups();
+    } catch (e) { console.error(e); }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ─── Analytics ────────────────────────────────────────────────────────────
+async function loadAnalytics() {
+    try {
+        const [overview, connections, contentHistory] = await Promise.all([
+            fetch('/api/analytics/overview').then(r => r.json()),
+            fetch('/api/analytics/connections').then(r => r.json()),
+            fetch('/api/analytics/content-history').then(r => r.json()),
+        ]);
+        renderConnectionsChart(connections.platforms);
+        renderContentChart(overview.content_generated);
+        renderStatsSummary(overview);
+        renderRecentContent(contentHistory);
+    } catch (e) {
+        console.error('Analytics load failed:', e);
+    }
+}
+
+function renderConnectionsChart(platforms) {
+    const ctx = document.getElementById('connectionsChart').getContext('2d');
+    const connected = platforms.filter(p => p.status === 'connected').length;
+    const notConnected = platforms.length - connected;
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Connected', 'Not connected'],
+            datasets: [{ data: [connected, notConnected], backgroundColor: ['#1e7e34', '#ddd'], borderWidth: 0 }]
+        },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Platform connections' } } }
+    });
+}
+
+function renderContentChart(content) {
+    const ctx = document.getElementById('contentChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Images', 'Audio'],
+            datasets: [{ label: 'Generated', data: [content.images, content.audio], backgroundColor: ['#4a90d9', '#d94a4a'], borderRadius: 4 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { title: { display: true, text: 'Content generated' } } }
+    });
+}
+
+function renderStatsSummary(overview) {
+    const div = document.getElementById('stats-summary');
+    const p = overview.platforms;
+    const c = overview.content_generated;
+    div.innerHTML = `<strong>Platforms:</strong> ${p.connected} / ${p.total} connected &nbsp;|&nbsp; <strong>Content:</strong> ${c.total} total (${c.images} images, ${c.audio} audio) &nbsp;|&nbsp; <strong>Updated:</strong> ${new Date(overview.timestamp).toLocaleTimeString()}`;
+}
+
+function renderRecentContent(history) {
+    const div = document.getElementById('recent-content');
+    const items = [];
+    history.images.slice(0, 6).forEach(img => {
+        items.push(`<div style="text-align:center;max-width:120px;"><img src="/generated/${encodeURIComponent(img.name)}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="window.open(this.src)" title="${img.name}"><div style="font-size:0.75rem;color:#666;margin-top:4px;">${(img.size/1024).toFixed(1)} KB</div></div>`);
+    });
+    history.audio.slice(0, 4).forEach(aud => {
+        items.push(`<div style="text-align:center;max-width:160px;"><div style="font-size:0.8rem;font-weight:600;margin-bottom:4px;">${aud.name}</div><audio controls src="/audio/${encodeURIComponent(aud.name)}" style="width:140px;height:30px;"></audio><div style="font-size:0.75rem;color:#666;">${(aud.size/1024).toFixed(1)} KB</div></div>`);
+    });
+    div.innerHTML = items.length ? items.join('') : '<span style="color:#999;">No generated content yet.</span>';
+}
+
+async function generateMeme() {
+    const prompt = document.getElementById('meme-prompt').value;
+    const resultDiv = document.getElementById('meme-result');
+    resultDiv.innerHTML = 'Generating...';
+    try {
+        const resp = await fetch('/api/images/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({prompt: prompt}) });
+        if (!resp.ok) { const err = await resp.json(); resultDiv.innerHTML = '<div class="error">' + (err.detail || 'Generation failed') + '</div>'; return; }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        resultDiv.innerHTML = '<img src="' + url + '" style="max-width:100%;border-radius:8px;">';
+        setTimeout(loadAnalytics, 1000);
+    } catch (e) { resultDiv.innerHTML = '<div class="error">' + e.message + '</div>'; }
+}
+
+async function generateVoice() {
+    const text = document.getElementById('voice-text').value;
+    const voice = document.getElementById('voice-name').value;
+    const resultDiv = document.getElementById('voice-result');
+    resultDiv.innerHTML = 'Generating...';
+    try {
+        const resp = await fetch('/api/tts/generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: text, voice: voice}) });
+        if (!resp.ok) { const err = await resp.json(); resultDiv.innerHTML = '<div class="error">' + (err.detail || 'Generation failed') + '</div>'; return; }
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        resultDiv.innerHTML = '<audio controls src="' + url + '" style="width:100%;"></audio>';
+        setTimeout(loadAnalytics, 1000);
+    } catch (e) { resultDiv.innerHTML = '<div class="error">' + e.message + '</div>'; }
+}
+
+async function sendPost() {
+    const text = document.getElementById('post-text').value;
+    const imageUrl = document.getElementById('post-image-url').value;
+    const resultDiv = document.getElementById('post-result');
+
+    const platforms = [];
+    if (document.getElementById('post-x').checked) platforms.push('x');
+    if (document.getElementById('post-facebook').checked) platforms.push('facebook');
+    if (document.getElementById('post-instagram').checked) platforms.push('instagram');
+    if (document.getElementById('post-threads').checked) platforms.push('threads');
+    if (document.getElementById('post-linkedin').checked) platforms.push('linkedin');
+    const postTelegram = document.getElementById('post-telegram').checked;
+    const postWhatsApp = document.getElementById('post-whatsapp').checked;
+
+    if (!platforms.length && !postTelegram && !postWhatsApp) { resultDiv.innerHTML = '<div class="error">Select at least one platform.</div>'; return; }
+    if (!text.trim()) { resultDiv.innerHTML = '<div class="error">Enter post text.</div>'; return; }
+
+    // Gather selected WhatsApp groups
+    const waGroupNames = [];
+    if (postWhatsApp) {
+        document.querySelectorAll('.wa-post-group-cb:checked').forEach(cb => waGroupNames.push(cb.value));
+        if (!waGroupNames.length) { resultDiv.innerHTML = '<div class="error">Select at least one WhatsApp group.</div>'; return; }
+    }
+
+    resultDiv.innerHTML = 'Posting…';
+    try {
+        const payload = {platforms, content: {text, image_url: imageUrl || undefined}};
+        if (postTelegram) {
+        const chatId = document.getElementById('post-telegram-chat').value.trim();
+        if (!chatId) { resultDiv.innerHTML = '<div class="error">Enter Telegram chat ID.</div>'; return; }
+        payload.telegram = {chat_id: chatId};
+    }
+    if (postWhatsApp) payload.whatsapp = {group_names: waGroupNames};
+
+        const resp = await fetch('/api/post', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (!resp.ok) { resultDiv.innerHTML = '<div class="error">' + (data.detail || 'Post failed') + '</div>'; return; }
+
+        let html = '<div style="font-size:0.9rem;">';
+        data.results.forEach(r => {
+            const color = r.status === 'posted' || r.status === 'sent' ? '#155724' : '#721c24';
+            const bg = r.status === 'posted' || r.status === 'sent' ? '#d4edda' : '#f8d7da';
+            html += `<div style="background:${bg};color:${color};padding:8px;border-radius:6px;margin-bottom:6px;">
+                <strong>${r.platform}</strong>: ${r.status}
+                ${r.group ? '<br><small>Group: ' + escapeHtml(r.group) + '</small>' : ''}
+                ${r.error ? '<br><small>' + r.error + '</small>' : ''}
+                ${r.tweet_id ? '<br><small>Tweet ID: ' + r.tweet_id + '</small>' : ''}
+                ${r.post_id ? '<br><small>Post ID: ' + r.post_id + '</small>' : ''}
+                ${r.thread_id ? '<br><small>Thread ID: ' + r.thread_id + '</small>' : ''}
+                ${r.post_urn ? '<br><small>Post URN: ' + r.post_urn + '</small>' : ''}
+            </div>`;
+        });
+        html += '</div>';
+        resultDiv.innerHTML = html;
+    } catch (e) {
+        resultDiv.innerHTML = '<div class="error">' + e.message + '</div>';
+    }
+}
+
+// Initialize
+loadAnalytics();
+loadWhatsAppGroups();
+checkWhatsAppHealth();
+// Pulse every 60 seconds
+setInterval(checkWhatsAppHealth, 60000);
+</script>
+{% endblock %}

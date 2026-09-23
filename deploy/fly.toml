@@ -1,0 +1,28 @@
+# fly.toml — SMPF Backend on Fly.io
+# Deploy with: fly deploy
+
+app = 'smpf-backend'
+primary_region = 'jnb'  # Johannesburg — closest to South Africa
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  PORT = '8080'
+  DATA_DIR = '/data'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false    # ← NEVER sleep
+  auto_start_machines = true
+  min_machines_running = 1      # ← Always keep 1 machine running
+  processes = ['app']
+
+[[mounts]]
+  source = 'smpf_data'
+  destination = '/data'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

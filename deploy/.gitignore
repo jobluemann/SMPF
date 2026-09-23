@@ -1,0 +1,33 @@
+# SMPF Backend
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# Data (don't commit tokens/sessions)
+data/whatsapp_session/
+data/*.jsonl
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deploy artifacts
+deploy/
+*.zip
+package_deploy.py

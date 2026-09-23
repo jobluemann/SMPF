@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/static/manifest.json">
+<title>SMPF Monitor</title>
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 12px; display: flex; flex-direction: column; }
+  h1 { margin: 0 0 2px; font-size: 1rem; }
+  .muted { color: #64748b; font-size: 0.7rem; }
+  .counts { display: flex; gap: 8px; margin: 8px 0; flex-shrink: 0; }
+  .count-box { padding: 8px 12px; border-radius: 8px; min-width: 60px; text-align: center; flex: 1; }
+  .ok { background: rgba(34,197,94,0.12); border: 1px solid #22c55e; }
+  .bad { background: rgba(239,68,68,0.12); border: 1px solid #ef4444; }
+  .count-number { font-size: 1.4rem; font-weight: 700; }
+  .count-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.7; margin-top: 1px; }
+  .scroll { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+  th { text-align: left; padding: 6px 3px; border-bottom: 1px solid #334155; color: #94a3b8; font-weight: 500; font-size: 0.6rem; text-transform: uppercase; position: sticky; top: 0; background: #0f172a; }
+  td { padding: 8px 3px; border-bottom: 1px solid #1e293b; vertical-align: top; }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
+  .dot.ok { background: #22c55e; }
+  .dot.bad { background: #ef4444; }
+  .dot.warn { background: #f59e0b; }
+  .small { font-size: 0.65rem; color: #64748b; }
+  .expiry-soon { color: #f59e0b; }
+  .expiry-good { color: #22c55e; }
+  a { color: #3b82f6; text-decoration: none; font-size: 0.7rem; }
+  .install-btn {
+    background: #3b82f6; color: #fff; border: none; padding: 8px 14px;
+    border-radius: 6px; font-weight: 600; font-size: 0.8rem; width: 100%; margin: 4px 0;
+  }
+  .hidden { display: none; }
+  .section-title { font-size: 0.65rem; text-transform: uppercase; color: #94a3b8; margin: 8px 0 4px; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<h1>SMPF Monitor</h1>
+<p class="muted">{{ checked_at[:19].replace('T',' ') }}</p>
+
+{% set ok_count = platforms.values() | selectattr('status', 'equalto', 'ok') | list | length %}
+{% set bad_count = platforms.values() | rejectattr('status', 'equalto', 'ok') | list | length %}
+
+<div class="counts">
+  <div class="count-box ok">
+    <div class="count-number">{{ ok_count }}</div>
+    <div class="count-label">Connected</div>
+  </div>
+  <div class="count-box bad">
+    <div class="count-number">{{ bad_count }}</div>
+    <div class="count-label">Down</div>
+  </div>
+  <div class="count-box" style="border:1px solid #334155">
+    <div class="count-number">{{ post_stats.total }}</div>
+    <div class="count-label">Posts (30d)</div>
+  </div>
+</div>
+
+<button id="installBtn" class="install-btn hidden">Add to Home Screen</button>
+
+<div class="scroll">
+
+<div class="section-title">Platform Health</div>
+<table>
+  <tr><th>Platform</th><th>Status</th><th>Token Expiry</th><th>Last Post</th><th></th></tr>
+  {% for name, result in platforms.items() %}
+  {% set expiry_info = token_expiries.get(name, {}) %}
+  {% set expires = expiry_info.get('expires_at') %}
+  {% set last_post = post_stats.last_success.get(name, '') %}
+  <tr>
+    <td>{{ name | title }}</td>
+    <td>
+      {% if result.status == 'ok' %}
+        <span class="dot ok"></span>OK
+      {% elif result.status == 'not_connected' %}
+        <span class="dot bad"></span>Off
+      {% else %}
+        <span class="dot bad"></span>{{ result.error or result.status }}
+      {% endif %}
+    </td>
+    <td>
+      {% if expires %}
+        <span class="{% if expires[:10] < '2026-10-01' %}expiry-soon{% else %}expiry-good{% endif %}">{{ expires }}</span>
+      {% else %}
+        <span class="small">N/A</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if last_post %}
+        <span class="small">{{ last_post[:10] }}</span>
+      {% else %}
+        <span class="small">—</span>
+      {% endif %}
+    </td>
+    <td style="text-align:right">
+      {% if result.status == 'ok' %}
+        <a href="/connectors/{{ name }}/disconnect">×</a>
+      {% else %}
+        <a href="/connectors/{{ name }}/start">→</a>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<div class="section-title">Post Performance (30 days)</div>
+<table>
+  <tr><th>Platform</th><th>Success</th><th>Failed</th><th>Rate</th></tr>
+  {% for name in ['x','facebook','instagram','threads','linkedin','youtube','reddit','minds','vk','telegram'] %}
+  {% set s = post_stats.success.get(name, 0) %}
+  {% set f = post_stats.failed.get(name, 0) %}
+  {% set total = s + f %}
+  {% if total > 0 %}
+  <tr>
+    <td>{{ name | title }}</td>
+    <td style="color:#22c55e">{{ s }}</td>
+    <td style="color:#ef4444">{{ f }}</td>
+    <td>{% if total > 0 %}{{ (s / total * 100) | int }}%{% else %}—{% endif %}</td>
+  </tr>
+  {% endif %}
+  {% endfor %}
+</table>
+
+</div>
+
+<p class="muted" style="margin-top:6px;flex-shrink:0;"><a href="/status">Refresh</a></p>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/sw.js').then(() => console.log('SW registered'));
+}
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.classList.remove('hidden');
+});
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') installBtn.classList.add('hidden');
+  deferredPrompt = null;
+});
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  installBtn.classList.add('hidden');
+}
+</script>
+
+</body>
+</html>

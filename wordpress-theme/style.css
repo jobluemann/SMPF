@@ -1,0 +1,270 @@
+/*
+Theme Name: SMPF Portal
+Theme URI: https://finwatchpro.net
+Author: Jo Bluemann
+Description: A clean, neutral white theme built specifically for the Social Media Platform Framework (SMPF) client portal and dashboard.
+Version: 1.0.0
+License: GPL-2.0+
+Text Domain: smpf-portal
+*/
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #1d2327;
+    background: #f6f7f7;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: #2271b1; text-decoration: none; }
+a:hover { color: #135e96; text-decoration: underline; }
+
+/* ===== LAYOUT ===== */
+.smpf-site {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.smpf-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ===== HEADER ===== */
+.smpf-header {
+    background: #ffffff;
+    border-bottom: 1px solid #c3c4c7;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.smpf-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+}
+.smpf-logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    letter-spacing: -0.3px;
+}
+.smpf-logo a { color: inherit; text-decoration: none; }
+.smpf-logo a:hover { color: #2271b1; }
+.smpf-nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 8px;
+}
+.smpf-nav a {
+    display: block;
+    padding: 8px 14px;
+    border-radius: 4px;
+    color: #3c434a;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: background 0.15s, color 0.15s;
+}
+.smpf-nav a:hover,
+.smpf-nav .current-menu-item a {
+    background: #f0f0f1;
+    color: #1d2327;
+    text-decoration: none;
+}
+
+/* Mobile nav toggle */
+.smpf-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #1d2327;
+}
+
+/* ===== MAIN CONTENT ===== */
+.smpf-main {
+    flex: 1;
+    padding: 32px 0;
+}
+.smpf-page-header {
+    margin-bottom: 24px;
+}
+.smpf-page-header h1 {
+    margin: 0 0 8px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+.smpf-page-header p {
+    margin: 0;
+    color: #646970;
+    font-size: 1rem;
+}
+
+/* ===== CARDS ===== */
+.smpf-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+}
+.smpf-card h2 {
+    margin-top: 0;
+    font-size: 1.3em;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+/* ===== BUTTONS ===== */
+.smpf-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #2271b1;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 500;
+}
+.smpf-btn:hover { background: #135e96; color: #fff; text-decoration: none; }
+.smpf-btn-success { background: #00a32a; }
+.smpf-btn-success:hover { background: #008a20; }
+.smpf-btn-danger { background: #d63638; }
+.smpf-btn-danger:hover { background: #b32d2e; }
+.smpf-btn-ghost {
+    background: transparent;
+    color: #2271b1;
+    border: 1px solid #2271b1;
+}
+.smpf-btn-ghost:hover { background: #2271b1; color: #fff; }
+
+/* ===== FORMS ===== */
+.smpf-form-group { margin-bottom: 16px; }
+.smpf-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 0.875rem;
+}
+.smpf-form-group input[type="text"],
+.smpf-form-group input[type="email"],
+.smpf-form-group input[type="url"],
+.smpf-form-group input[type="password"],
+.smpf-form-group input[type="number"],
+.smpf-form-group select,
+.smpf-form-group textarea {
+    width: 100%;
+    max-width: 500px;
+    padding: 6px 8px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    background: #fff;
+    color: #2c3338;
+}
+.smpf-form-group input:focus,
+.smpf-form-group select:focus,
+.smpf-form-group textarea:focus {
+    border-color: #2271b1;
+    outline: 2px solid rgba(34,113,177,0.2);
+    outline-offset: 0;
+}
+
+/* ===== ALERTS ===== */
+.smpf-alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+.smpf-alert-error {
+    background: #fcf0f1;
+    border: 1px solid #d63638;
+    color: #8a2424;
+}
+.smpf-alert-success {
+    background: #edfaef;
+    border: 1px solid #00a32a;
+    color: #005c12;
+}
+.smpf-alert-warning {
+    background: #fcf9e8;
+    border: 1px solid #dba617;
+    color: #7a5e00;
+}
+
+/* ===== TABLES ===== */
+.smpf-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+}
+.smpf-table th,
+.smpf-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f1;
+}
+.smpf-table th {
+    font-weight: 600;
+    background: #f6f7f7;
+    color: #1d2327;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.smpf-table tbody tr:hover { background: #f6f7f7; }
+
+/* ===== FOOTER ===== */
+.smpf-footer {
+    background: #1a1a2e;
+    color: #a7aaad;
+    padding: 24px 0;
+    font-size: 0.875rem;
+    text-align: center;
+}
+.smpf-footer a { color: #a7aaad; }
+.smpf-footer a:hover { color: #fff; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .smpf-nav { display: none; }
+    .smpf-nav-toggle { display: block; }
+    .smpf-page-header h1 { font-size: 1.4rem; }
+    .smpf-table th,
+    .smpf-table td { padding: 10px 12px; font-size: 0.875rem; }
+}
+
+/* ===== WORDPRESS DEFAULTS ===== */
+.wp-caption { max-width: 100%; }
+.alignleft { float: left; margin-right: 20px; }
+.alignright { float: right; margin-left: 20px; }
+.aligncenter { display: block; margin: 0 auto; }
+.screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal !important;
+}

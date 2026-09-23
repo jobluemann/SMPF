@@ -1,0 +1,43 @@
+<!-- SMPF v2 — register.html — Neutral White Theme -->
+{% extends "base.html" %}
+{% block title %}Create account — SMPF{% endblock %}
+{% block content %}
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">SMPF</a>
+        <div class="nav-links">
+            <a href="/login">Log in</a>
+        </div>
+    </div>
+</nav>
+
+<div class="auth-box">
+    <div class="card">
+        <div class="auth-header">
+            <h1>Create your account</h1>
+            <p>Start managing your social media in one place</p>
+        </div>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/register">
+            <label for="company_name">Company or brand name</label>
+            <input type="text" id="company_name" name="company_name" required placeholder="Acme Inc">
+
+            <label for="email">Work email</label>
+            <input type="email" id="email" name="email" required placeholder="you@company.com">
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Min 12 characters">
+
+            <button type="submit">Create account</button>
+        </form>
+
+        <p style="text-align:center;margin-top:20px;font-size:0.9rem;">
+            Already have an account? <a href="/login">Log in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMPF Donation Bar — Live Preview</title>
+    <style>
+        /* ===== DEMO PAGE STYLES ===== */
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f6f7f7;
+            color: #1d2327;
+            line-height: 1.6;
+        }
+        .demo-header {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .demo-header h1 { margin: 0 0 8px; font-size: 2rem; }
+        .demo-header p { margin: 0; opacity: 0.8; }
+        .demo-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .demo-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .demo-card h2 { margin-top: 0; color: #1a1a2e; }
+        .demo-controls {
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .demo-controls label {
+            display: inline-block;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .demo-controls select, .demo-controls input {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #c3c4c7;
+            font-size: 14px;
+        }
+        .demo-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #2271b1;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        .demo-btn:hover { background: #135e96; }
+
+        /* ===== DONATION BAR STYLES (identical to plugin) ===== */
+        .smpf-donation-bar {
+            position: fixed;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+            max-width: 320px;
+            width: auto;
+        }
+        .smpf-donation-bar.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .smpf-donation-bar.position-bottom-right { bottom: 24px; right: 24px; }
+        .smpf-donation-bar.position-bottom-left { bottom: 24px; left: 24px; }
+        .smpf-donation-bar.position-bottom-center {
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px) scale(0.95);
+        }
+        .smpf-donation-bar.position-bottom-center.active {
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+        .smpf-donation-bar.position-top-right { top: 24px; right: 24px; }
+        .smpf-donation-bar.position-top-left { top: 24px; left: 24px; }
+
+        .smpf-donation-banner {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-align: center;
+            white-space: nowrap;
+            animation: smpf-banner-pulse 3s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        @keyframes smpf-banner-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .smpf-donation-icons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .smpf-donation-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            text-decoration: none;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .smpf-donation-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .smpf-donation-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+        .smpf-donation-icon::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: #000;
+            color: #fff;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .smpf-donation-icon:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .smpf-donation-close {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #d63638;
+            color: #fff;
+            border: 2px solid #fff;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+        .smpf-donation-close:hover { opacity: 1; }
+        .smpf-donation-icon.paypal { background: #003087; color: #fff; }
+        .smpf-donation-icon.kofi { background: #ff5e5b; color: #fff; }
+        .smpf-donation-icon.buymeacoffee { background: #ffdd00; color: #0d0d0d; }
+        .smpf-donation-icon.btc { background: #f7931a; color: #fff; }
+        .smpf-donation-icon.eth { background: #627eea; color: #fff; }
+
+        @media (max-width: 480px) {
+            .smpf-donation-bar { max-width: 280px; padding: 12px 14px; }
+            .smpf-donation-icon { width: 40px; height: 40px; }
+            .smpf-donation-icon svg { width: 20px; height: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Demo Page Content -->
+    <header class="demo-header">
+        <h1>SMPF Donation Bar Preview</h1>
+        <p>This is how the floating donation banner looks on any WordPress page.</p>
+    </header>
+
+    <div class="demo-content">
+        <div class="demo-controls">
+            <label>Position:</label>
+            <select id="positionSelect">
+                <option value="bottom-right" selected>Bottom Right</option>
+                <option value="bottom-left">Bottom Left</option>
+                <option value="bottom-center">Bottom Center</option>
+                <option value="top-right">Top Right</option>
+                <option value="top-left">Top Left</option>
+            </select>
+            <label style="margin-left:16px">Interval (min):</label>
+            <input id="intervalInput" type="number" value="1" min="1" max="10" style="width:60px">
+            <button class="demo-btn" onclick="applySettings()">Apply</button>
+            <button class="demo-btn" onclick="forceShow()" style="background:#00a32a">Show Now</button>
+        </div>
+
+        <div class="demo-card">
+            <h2>Sample Blog Post</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </div>
+        <div class="demo-card">
+            <h2>Another Article Section</h2>
+            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        </div>
+        <div class="demo-card">
+            <h2>Keep Scrolling</h2>
+            <p>The donation bar is fixed to the viewport — it stays visible (or hidden) regardless of scroll position. Try scrolling down to confirm it remains anchored.</p>
+            <p>More dummy content to enable scrolling...</p>
+            <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+        </div>
+        <div class="demo-card">
+            <h2>Configuration Notes</h2>
+            <p>When you deploy this in WordPress, the bar only appears if <strong>at least one</strong> payment method is configured. All settings are controlled from <strong>SMPF → Packages & Payments</strong>.</p>
+            <p>The banner respects the user's session — if they click ×, it stays hidden until they close and reopen their browser.</p>
+        </div>
+    </div>
+
+    <!-- ===== LIVE DONATION BAR ===== -->
+    <div id="smpf-donation-bar" class="smpf-donation-bar position-bottom-right">
+        <button id="smpf-donation-close" class="smpf-donation-close" aria-label="Close">&times;</button>
+        <div class="smpf-donation-banner">Help support our work</div>
+        <div class="smpf-donation-icons">
+            <a href="https://paypal.me/demo" target="_blank" class="smpf-donation-icon paypal" data-label="PayPal" aria-label="PayPal">
+                <svg viewBox="0 0 24 24"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.629h6.724c2.838 0 5.098.835 5.946 2.455.468.895.633 1.81.527 2.94-.169 1.856-1.023 3.295-2.47 4.146-1.35.795-3.135 1.135-5.118 1.135H9.784a.77.77 0 0 0-.756.629l-.76 4.933a.641.641 0 0 1-.633.74H7.076zm7.337-14.34c-.079.503.034.93.351 1.296.342.395.89.6 1.611.6h.032c1.397 0 2.52-.297 3.312-.876.802-.587 1.348-1.468 1.588-2.556.123-.548.055-1.005-.197-1.36-.268-.377-.742-.577-1.396-.577-.025 0-.051 0-.076.001h-.032c-1.301 0-2.337.29-3.047.849-.724.57-1.188 1.418-1.347 2.423z"/></svg>
+            </a>
+            <a href="https://ko-fi.com/demo" target="_blank" class="smpf-donation-icon kofi" data-label="Ko-fi" aria-label="Ko-fi">
+                <svg viewBox="0 0 24 24"><path d="M23.881 8.948c-.773-4.085-4.24-6.446-8.452-6.446H.613C.154 2.502 0 2.752 0 3.208v17.502c0 .456.154.706.613.706h14.816c4.212 0 7.679-2.361 8.452-6.446.254-1.342.254-3.976 0-5.318zM7.659 16.93c0 .456-.154.706-.613.706H4.613c-.459 0-.613-.25-.613-.706V7.208c0-.456.154-.706.613-.706h2.433c.459 0 .613.25.613.706v9.722zm8.9-4.802c-.842.69-2.088.99-3.546.99h-.554v4.012c0 .456-.154.706-.613.706h-2.433c-.459 0-.613-.25-.613-.706V7.208c0-.456.154-.706.613-.706h3.6c1.458 0 2.704.3 3.546.99 1.037.85 1.42 2.06 1.42 3.418 0 1.358-.383 2.568-1.42 3.418z"/></svg>
+            </a>
+            <a href="https://buymeacoffee.com/demo" target="_blank" class="smpf-donation-icon buymeacoffee" data-label="Buy Me a Coffee" aria-label="Buy Me a Coffee">
+                <svg viewBox="0 0 24 24"><path d="M6.449 0h11.102c.68 0 1.232.552 1.232 1.232v21.536c0 .68-.552 1.232-1.232 1.232H6.449a1.232 1.232 0 0 1-1.232-1.232V1.232C5.217.552 5.769 0 6.449 0zm1.974 4.635v13.73h7.154V4.635H8.423zm2.038 12.308h3.077v1.538h-3.077v-1.538zM7.654 3.097h8.692v.769H7.654v-.769z"/></svg>
+            </a>
+            <a href="bitcoin:bc1qdemo" class="smpf-donation-icon btc" data-label="Bitcoin" aria-label="Bitcoin">
+                <svg viewBox="0 0 24 24"><path d="M23.638 14.904c-1.602 6.43-8.113 10.34-14.542 8.736C2.67 22.05-1.244 15.525.362 9.105 1.962 2.67 8.475-1.244 14.9.358c6.43 1.605 10.342 8.115 8.738 14.546zm-6.35-4.613c.24-1.59-.974-2.45-2.64-3.03l.54-2.153-1.315-.33-.52 2.1c-.347-.087-.7-.167-1.053-.25l.53-2.12-1.32-.33-.54 2.15c-.285-.065-.565-.13-.837-.2l-1.815-.45-.35 1.407s.975.224.955.238c.535.136.63.486.615.766l-.616 2.473c.037.01.085.025.138.048l-.14-.035-.865 3.47c-.066.164-.234.41-.612.316.014.02-.956-.238-.956-.238L8.12 16.54l1.71.426c.318.08.63.164.937.243l-.545 2.19 1.32.33.54-2.16c.36.1.708.19 1.05.27l-.537 2.14 1.32.33.545-2.18c2.24.42 3.93.25 4.64-1.77.57-1.63-.03-2.57-1.22-3.18.87-.2 1.53-.78 1.7-1.97zm-3.04 4.3c-.41 1.64-3.17.75-4.07.53l.73-2.92c.9.22 3.78.66 3.34 2.39zm.41-4.3c-.37 1.49-2.68.73-3.43.55l.66-2.64c.75.19 3.17.54 2.77 2.09z"/></svg>
+            </a>
+            <a href="ethereum:0xDemoEth" class="smpf-donation-icon eth" data-label="Ethereum" aria-label="Ethereum">
+                <svg viewBox="0 0 24 24"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35h.003zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35L12.056 0z"/></svg>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        /* ===== DONATION BAR LOGIC ===== */
+        (function () {
+            var bar = document.getElementById('smpf-donation-bar');
+            var intervalMs = 60000; // 1 minute for demo
+            var showDurationMs = 15000;
+            var timerId = null;
+
+            function showBar() {
+                bar.classList.add('active');
+                clearTimeout(timerId);
+                timerId = setTimeout(hideBar, showDurationMs);
+            }
+            function hideBar() {
+                bar.classList.remove('active');
+                clearTimeout(timerId);
+                timerId = setTimeout(showBar, intervalMs);
+            }
+            document.getElementById('smpf-donation-close').addEventListener('click', function () {
+                bar.classList.remove('active');
+                clearTimeout(timerId);
+            });
+            setTimeout(showBar, 2000); // First show after 2s
+        })();
+
+        /* ===== DEMO CONTROLS ===== */
+        function applySettings() {
+            var pos = document.getElementById('positionSelect').value;
+            var bar = document.getElementById('smpf-donation-bar');
+            bar.className = 'smpf-donation-bar position-' + pos;
+            alert('Position updated to: ' + pos);
+        }
+        function forceShow() {
+            var bar = document.getElementById('smpf-donation-bar');
+            bar.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+venv/
+data/
+__pycache__/
+*.pyc
+*.bak*
+.env
+.env.save*
+.meta_page_token
+.threads_token
+SMPF-BACKEND-CONFIG.txt
+RENDER-KEYS-CHECKLIST.txt

@@ -1,0 +1,70 @@
+<!-- SMPF v1 — frontend/templates/whatsapp_qr.html — 2026-08-27 -->
+<!-- Page shown while user scans WhatsApp Web QR code. Auto-refreshes status. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect WhatsApp — SMPF</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .qr-container { text-align:center; margin: 40px auto; max-width: 400px; }
+        .qr-container img { border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .status-box { margin-top: 24px; padding: 16px; border-radius: 8px; background: #f8f9fa; }
+        .status-waiting { color: #856404; background: #fff3cd; }
+        .status-connected { color: #155724; background: #d4edda; }
+        .status-error { color: #721c24; background: #f8d7da; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width:600px;">
+        <h1>🔗 Connect WhatsApp Web</h1>
+
+        <div class="warning-box">
+            <strong>⚠️ Warning:</strong> WhatsApp bans automation. Use only for groups you manage.
+            Your phone must stay online. QR expires in ~40 seconds — scan quickly!
+        </div>
+
+        <div class="qr-container">
+            <img src="/static/whatsapp_qr.png?t={{ timestamp }}" alt="WhatsApp QR Code" style="width:280px;height:280px;">
+            <p style="color:#666;font-size:0.9rem;margin-top:12px;">
+                Open WhatsApp on your phone → Settings → Linked Devices → Link a Device → Scan this code
+            </p>
+        </div>
+
+        <div id="status-box" class="status-box status-waiting">
+            ⏳ Waiting for you to scan the QR code…
+        </div>
+
+        <p style="text-align:center;margin-top:24px;">
+            <a href="/dashboard" class="btn-link" style="background:#6c757d;">Cancel &amp; back to dashboard</a>
+        </p>
+    </div>
+
+    <script>
+    async function checkStatus() {
+        try {
+            const resp = await fetch('/connectors/whatsapp/status-poll');
+            const data = await resp.json();
+            const box = document.getElementById('status-box');
+            if (data.status === 'connected') {
+                box.className = 'status-box status-connected';
+                box.innerHTML = '✅ ' + data.message + '<br><br><a href="/dashboard" class="btn-link">Go to dashboard</a>';
+                return; // stop polling
+            } else if (data.status === 'error') {
+                box.className = 'status-box status-error';
+                box.innerHTML = '❌ ' + data.error + '<br><br><a href="/connectors/whatsapp/start" class="btn-link">Try again</a>';
+                return;
+            }
+            // else waiting — keep polling
+            setTimeout(checkStatus, 4000);
+        } catch (e) {
+            setTimeout(checkStatus, 4000);
+        }
+    }
+    // Start polling after a short delay (give user time to see QR)
+    setTimeout(checkStatus, 3000);
+    </script>
+</body>
+</html>

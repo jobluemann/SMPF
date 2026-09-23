@@ -1,0 +1,222 @@
+/* SMPF Floating Donation Bar Styles */
+
+.smpf-donation-bar {
+    position: fixed;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+    max-width: 320px;
+    width: auto;
+}
+
+.smpf-donation-bar.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Position variants */
+.smpf-donation-bar.position-bottom-right {
+    bottom: 24px;
+    right: 24px;
+}
+
+.smpf-donation-bar.position-bottom-left {
+    bottom: 24px;
+    left: 24px;
+}
+
+.smpf-donation-bar.position-bottom-center {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+}
+
+.smpf-donation-bar.position-bottom-center.active {
+    transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.smpf-donation-bar.position-top-right {
+    top: 24px;
+    right: 24px;
+}
+
+.smpf-donation-bar.position-top-left {
+    top: 24px;
+    left: 24px;
+}
+
+/* Banner text */
+.smpf-donation-banner {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-align: center;
+    white-space: nowrap;
+    animation: smpf-banner-pulse 3s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+@keyframes smpf-banner-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Icons container */
+.smpf-donation-icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Individual icon link */
+.smpf-donation-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.smpf-donation-icon:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.smpf-donation-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+}
+
+/* Platform colours */
+.smpf-donation-icon.paypal {
+    background: #003087;
+    color: #fff;
+}
+
+.smpf-donation-icon.kofi {
+    background: #ff5e5b;
+    color: #fff;
+}
+
+.smpf-donation-icon.buymeacoffee {
+    background: #ffdd00;
+    color: #0d0d0d;
+}
+
+.smpf-donation-icon.btc {
+    background: #f7931a;
+    color: #fff;
+}
+
+.smpf-donation-icon.eth {
+    background: #627eea;
+    color: #fff;
+}
+
+/* Tooltip on hover */
+.smpf-donation-icon::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #000;
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.smpf-donation-icon:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Close button */
+.smpf-donation-close {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #d63638;
+    color: #fff;
+    border: 2px solid #fff;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.smpf-donation-close:hover {
+    opacity: 1;
+}
+
+/* QR Code */
+.smpf-donation-qr {
+    margin-top: 4px;
+    text-align: center;
+}
+
+.smpf-donation-qr img {
+    max-width: 160px;
+    max-height: 160px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 4px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    .smpf-donation-bar {
+        max-width: 280px;
+        padding: 12px 14px;
+    }
+
+    .smpf-donation-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .smpf-donation-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .smpf-donation-qr img {
+        max-width: 140px;
+    }
+}

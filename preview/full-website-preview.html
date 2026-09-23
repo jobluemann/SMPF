@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMPF Portal — Full Website Preview</title>
+    <style>
+        /* ===== SMPF PORTAL THEME ===== */
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #1d2327;
+            background: #f6f7f7;
+        }
+        img { max-width: 100%; height: auto; display: block; }
+        a { color: #2271b1; text-decoration: none; }
+        a:hover { color: #135e96; text-decoration: underline; }
+
+        .smpf-site { display: flex; flex-direction: column; min-height: 100vh; }
+        .smpf-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* Header */
+        .smpf-header {
+            background: #ffffff;
+            border-bottom: 1px solid #c3c4c7;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .smpf-header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+        .smpf-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: -0.3px;
+        }
+        .smpf-nav ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 8px;
+        }
+        .smpf-nav a {
+            display: block;
+            padding: 8px 14px;
+            border-radius: 4px;
+            color: #3c434a;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            transition: background 0.15s, color 0.15s;
+        }
+        .smpf-nav a:hover { background: #f0f0f1; color: #1d2327; text-decoration: none; }
+        .smpf-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #1d2327;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 2.8rem; margin: 0 0 16px; font-weight: 700; }
+        .hero p { font-size: 1.2rem; opacity: 0.85; max-width: 600px; margin: 0 auto 32px; }
+        .hero-btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #f59e0b;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .hero-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245,158,11,0.4); text-decoration: none; color: #fff; }
+
+        /* Main Content */
+        .smpf-main { flex: 1; padding: 40px 0; }
+        .smpf-page-header { margin-bottom: 32px; }
+        .smpf-page-header h1 { margin: 0 0 8px; font-size: 1.75rem; font-weight: 700; color: #1a1a2e; }
+        .smpf-page-header p { margin: 0; color: #646970; font-size: 1rem; }
+
+        .smpf-card {
+            background: #fff;
+            border: 1px solid #c3c4c7;
+            border-radius: 4px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .smpf-card h2 { margin-top: 0; font-size: 1.3em; color: #1a1a2e; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+        .smpf-card h3 { color: #1a1a2e; margin-top: 24px; }
+
+        /* Grid for dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .dashboard-card {
+            background: #fff;
+            border: 1px solid #c3c4c7;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .dashboard-card h3 { margin-top: 0; font-size: 1.1rem; color: #1a1a2e; }
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; }
+        .status-dot.green { background: #00a32a; }
+        .status-dot.red { background: #d63638; }
+        .status-dot.amber { background: #dba617; }
+
+        /* Buttons */
+        .smpf-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #2271b1;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .smpf-btn:hover { background: #135e96; color: #fff; text-decoration: none; }
+        .smpf-btn-success { background: #00a32a; }
+        .smpf-btn-success:hover { background: #008a20; }
+        .smpf-btn-danger { background: #d63638; }
+        .smpf-btn-danger:hover { background: #b32d2e; }
+
+        /* Footer */
+        .smpf-footer {
+            background: #1a1a2e;
+            color: #a7aaad;
+            padding: 32px 0;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+        .smpf-footer a { color: #a7aaad; }
+        .smpf-footer a:hover { color: #fff; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .smpf-nav { display: none; }
+            .smpf-nav-toggle { display: block; }
+            .hero h1 { font-size: 2rem; }
+            .hero { padding: 50px 20px; }
+        }
+
+        /* ===== DONATION BAR (identical to plugin) ===== */
+        .smpf-donation-bar {
+            position: fixed;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            pointer-events: none;
+            max-width: 320px;
+            width: auto;
+            bottom: 24px;
+            right: 24px;
+        }
+        .smpf-donation-bar.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        .smpf-donation-banner {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            text-align: center;
+            white-space: nowrap;
+            animation: banner-pulse 3s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        @keyframes banner-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .smpf-donation-icons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .smpf-donation-icon {
+            display: flex; align-items: center; justify-content: center;
+            width: 44px; height: 44px; border-radius: 50%;
+            text-decoration: none; transition: transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative; overflow: hidden;
+        }
+        .smpf-donation-icon:hover { transform: translateY(-3px) scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .smpf-donation-icon svg { width: 22px; height: 22px; fill: currentColor; }
+        .smpf-donation-icon.paypal { background: #003087; color: #fff; }
+        .smpf-donation-icon.kofi { background: #ff5e5b; color: #fff; }
+        .smpf-donation-icon.buymeacoffee { background: #ffdd00; color: #0d0d0d; }
+        .smpf-donation-icon.btc { background: #f7931a; color: #fff; }
+        .smpf-donation-icon.eth { background: #627eea; color: #fff; }
+        .smpf-donation-close {
+            position: absolute; top: -10px; right: -10px;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #d63638; color: #fff; border: 2px solid #fff;
+            font-size: 14px; line-height: 1; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; padding: 0;
+        }
+        .smpf-donation-qr { margin-top: 4px; text-align: center; }
+        .smpf-donation-qr img { max-width: 160px; max-height: 160px; border-radius: 8px; background: #fff; padding: 4px; }
+
+        @media (max-width: 480px) {
+            .smpf-donation-bar { max-width: 280px; padding: 12px 14px; }
+            .smpf-donation-icon { width: 40px; height: 40px; }
+            .smpf-donation-icon svg { width: 20px; height: 20px; }
+            .smpf-donation-qr img { max-width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SITE HEADER ===== -->
+    <div class="smpf-site">
+        <header class="smpf-header">
+            <div class="smpf-container smpf-header-inner">
+                <div class="smpf-logo">SMPF Portal</div>
+                <nav class="smpf-nav">
+                    <ul>
+                        <li><a href="#">Dashboard</a></li>
+                        <li><a href="#">My Platforms</a></li>
+                        <li><a href="#">Analytics</a></li>
+                        <li><a href="#">Settings</a></li>
+                    </ul>
+                </nav>
+                <button class="smpf-nav-toggle">&#9776;</button>
+            </div>
+        </header>
+
+        <!-- ===== HERO SECTION ===== -->
+        <section class="hero">
+            <h1>Social Media Platform Framework</h1>
+            <p>Automate your content, manage all platforms from one dashboard, and grow your audience with AI-powered posting.</p>
+            <a href="#" class="hero-btn">Get Started</a>
+        </section>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="smpf-main">
+            <div class="smpf-container">
+
+                <!-- Dashboard Overview -->
+                <div class="smpf-page-header">
+                    <h1>Dashboard</h1>
+                    <p>Overview of your connected platforms and recent activity.</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Platform Status</h3>
+                        <p><span class="status-dot green"></span> X (Twitter) — Connected</p>
+                        <p><span class="status-dot green"></span> Facebook — Connected</p>
+                        <p><span class="status-dot amber"></span> Instagram — Pending</p>
+                        <p><span class="status-dot red"></span> Threads — Not connected</p>
+                        <p><span class="status-dot red"></span> WhatsApp — Not connected</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Today's Posts</h3>
+                        <p><strong>3</strong> posts scheduled</p>
+                        <p><strong>1</strong> post published</p>
+                        <p><strong>0</strong> posts failed</p>
+                        <p style="margin-top: 12px;"><a href="#" class="smpf-btn">Schedule New Post</a></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Engagement (Last 7 Days)</h3>
+                        <p><strong>1,247</strong> impressions</p>
+                        <p><strong>89</strong> likes</p>
+                        <p><strong>34</strong> shares</p>
+                        <p><strong>12</strong> comments</p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Your Package</h3>
+                        <p><strong>Starter</strong></p>
+                        <p>X + 1 Meta platform</p>
+                        <p>3 posts/day</p>
+                        <p style="margin-top: 12px;"><a href="#" class="smpf-btn smpf-btn-success">Upgrade</a></p>
+                    </div>
+                </div>
+
+                <!-- Sample Content Cards -->
+                <div class="smpf-card" style="margin-top: 24px;">
+                    <h2>Recent Activity</h2>
+                    <p>Your latest posts across all platforms. This section would show real-time data from the FastAPI backend.</p>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #f0f0f0; text-align: left;">
+                                <th style="padding: 10px;">Platform</th>
+                                <th style="padding: 10px;">Content</th>
+                                <th style="padding: 10px;">Time</th>
+                                <th style="padding: 10px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 10px;">X</td>
+                                <td style="padding: 10px;">Government charging taxes for nothing...</td>
+                                <td style="padding: 10px;">08:15 AM</td>
+                                <td style="padding: 10px;"><span style="color: #00a32a; font-weight: 600;">Published</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 10px;">Facebook</td>
+                                <td style="padding: 10px;">Meme: ANC service delivery</td>
+                                <td style="padding: 10px;">09:30 AM</td>
+                                <td style="padding: 10px;"><span style="color: #00a32a; font-weight: 600;">Published</span></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px;">X</td>
+                                <td style="padding: 10px;">Breaking: Top news story analysis</td>
+                                <td style="padding: 10px;">02:00 PM</td>
+                                <td style="padding: 10px;"><span style="color: #dba617; font-weight: 600;">Scheduled</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="smpf-card">
+                    <h2>Quick Actions</h2>
+                    <p>
+                        <a href="#" class="smpf-btn">Connect Instagram</a>
+                        <a href="#" class="smpf-btn smpf-btn-success">Create Post</a>
+                        <a href="#" class="smpf-btn smpf-btn-danger">Disconnect X</a>
+                    </p>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="smpf-footer">
+            <div class="smpf-container">
+                <p>&copy; 2026 SMPF Portal. All rights reserved.</p>
+                <p>Powered by <a href="#">Social Media Platform Framework</a></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ===== FLOATING DONATION BAR ===== -->
+    <div id="smpf-donation-bar" class="smpf-donation-bar active">
+        <button id="smpf-donation-close" class="smpf-donation-close" onclick="this.parentElement.classList.remove('active')">&times;</button>
+        <div class="smpf-donation-banner">Help support our work</div>
+        <div class="smpf-donation-icons">
+            <a href="https://paypal.me/demo" target="_blank" class="smpf-donation-icon paypal" data-label="PayPal" aria-label="PayPal">
+                <svg viewBox="0 0 24 24"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.629h6.724c2.838 0 5.098.835 5.946 2.455.468.895.633 1.81.527 2.94-.169 1.856-1.023 3.295-2.47 4.146-1.35.795-3.135 1.135-5.118 1.135H9.784a.77.77 0 0 0-.756.629l-.76 4.933a.641.641 0 0 1-.633.74H7.076z"/></svg>
+            </a>
+            <a href="https://ko-fi.com/jobluemann" target="_blank" class="smpf-donation-icon kofi" data-label="Ko-fi" aria-label="Ko-fi">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </a>
+            <a href="https://buymeacoffee.com/jobluemann" target="_blank" class="smpf-donation-icon buymeacoffee" data-label="Buy Me a Coffee" aria-label="Buy Me a Coffee">
+                <svg viewBox="0 0 24 24"><path d="M6.449 0h11.102c.68 0 1.232.552 1.232 1.232v21.536c0 .68-.552 1.232-1.232 1.232H6.449a1.232 1.232 0 0 1-1.232-1.232V1.232C5.217.552 5.769 0 6.449 0zm1.974 4.635v13.73h7.154V4.635H8.423z"/></svg>
+            </a>
+            <a href="bitcoin:bc1qdemo" class="smpf-donation-icon btc" data-label="Bitcoin" aria-label="Bitcoin">
+                <svg viewBox="0 0 24 24"><path d="M23.638 14.904c-1.602 6.43-8.113 10.34-14.542 8.736C2.67 22.05-1.244 15.525.362 9.105 1.962 2.67 8.475-1.244 14.9.358c6.43 1.605 10.342 8.115 8.738 14.546z"/></svg>
+            </a>
+            <a href="ethereum:0xDemoEth" class="smpf-donation-icon eth" data-label="Ethereum" aria-label="Ethereum">
+                <svg viewBox="0 0 24 24"><path d="M11.944 17.97L4.58 13.62 11.943 24l7.37-10.38-7.372 4.35zM12.056 0L4.69 12.223l7.365 4.354 7.365-4.35z"/></svg>
+            </a>
+        </div>
+        <!-- QR CODE -->
+        <div class="smpf-donation-qr">
+            <img src="bmc-qr-code.png" alt="Scan to donate" style="max-width: 160px; border-radius: 8px; background: #fff; padding: 4px;">
+        </div>
+    </div>
+
+    <!-- ===== KO-FI FLOATING CHAT WIDGET ===== -->
+    <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+    <script>
+        kofiWidgetOverlay.draw('jobluemann', {
+            'type': 'floating-chat',
+            'floating-chat.donateButton.text': 'Support me',
+            'floating-chat.donateButton.background-color': '#00b9fe',
+            'floating-chat.donateButton.text-color': '#fff'
+        });
+    </script>
+
+    <!-- ===== BUY ME A COFFEE BUTTON ===== -->
+    <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="jobluemann" data-color="#FFDD00" data-emoji="☕" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+
+</body>
+</html>
