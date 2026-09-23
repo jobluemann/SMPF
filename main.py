@@ -1257,3 +1257,33 @@ async def telegram_approval_webhook(request: Request):
 def api_queue_status(client_id: str, db: Session = Depends(get_db)):
     entries = db.query(PostQueue).filter(PostQueue.client_id == client_id).order_by(PostQueue.created_at.desc()).limit(20).all()
     return {"entries": [{"id": e.id, "platforms": json.loads(e.platforms), "text": e.text, "status": e.status, "created_at": e.created_at.isoformat() if e.created_at else None, "approved_at": e.approved_at.isoformat() if e.approved_at else None} for e in entries]}
+
+
+
+# ─── Safe error handling: never send secrets/tokens to the browser ─────────
+import re as _re, uuid as _uuid
+from fastapi import Request as _Req
+from fastapi.responses import JSONResponse as _JSON
+from starlette.exceptions import HTTPException as _StarletteHTTPException
+
+_SENSITIVE = _re.compile(r"(client_secret|access_token|refresh_token|api_key|token|code)=[^&\s\"']+", _re.I)
+
+
+def _scrub(text) -> str:
+    return _SENSITIVE.sub(r"\1=***", str(text))
+
+
+@app.exception_handler(_StarletteHTTPException)
+async def _safe_http_exc(request: _Req, exc: _StarletteHTTPException):
+    if exc.status_code >= 500:
+        ref = _uuid.uuid4().hex[:8]
+        print(f"ERROR ref={ref} {request.method} {request.url.path} status={exc.status_code} detail={_scrub(exc.detail)}", flush=True)
+        return _JSON(status_code=exc.status_code, content={"detail": f"Something went wrong. Please try again. (ref {ref})"})
+    return _JSON(status_code=exc.status_code, content={"detail": _scrub(exc.detail)}, headers=getattr(exc, "headers", None))
+
+
+@app.exception_handler(Exception)
+async def _safe_unhandled(request: _Req, exc: Exception):
+    ref = _uuid.uuid4().hex[:8]
+    print(f"UNHANDLED ref={ref} {request.method} {request.url.path} {type(exc).__name__}: {_scrub(exc)}", flush=True)
+    return _JSON(status_code=500, content={"detail": f"Something went wrong. Please try again. (ref {ref})"})
