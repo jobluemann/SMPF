@@ -65,6 +65,8 @@ The platform targets:
 | **Hosting** | Hetzner CX21 VPS (€5.35/mo) | 24/7 backend server |
 
 ### 2.3 Frontend (WordPress)
+> Superseded: the WordPress/plugin idea was abandoned. The client portal is plain PHP files uploaded directly to SiteGround.
+
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
@@ -124,6 +126,12 @@ All plugins are **modular, independent, and API-driven**.
 - **Alerts**: Left-border accent, light background
 
 ---
+
+### 3.5 Public Website Look & Feel
+- Plain white background, generous white space, one accent colour, clear dark text - nothing flashy, but not boring
+- Interest comes from a strong headline, good imagery and subtle motion
+- Front page: slowly scrolling strip of honest client reviews with star ratings (first name + business type)
+- Reviews must be REAL (fake reviews are illegal in US/EU/SA). Until real reviews exist, the strip shows honest facts instead
 
 ## 4. Platform Integration Matrix
 
@@ -195,13 +203,16 @@ Landing Page → Register → Verify Email → Login → Dashboard
 ```
 
 ### 6.2 Package Tiers (Planned)
+Prices in USD - one global price (final amounts to confirm: $17/$29/$47 or $19/$29/$49).
 
-| Tier | Platforms | Posts/Day | Price | WhatsApp |
+| Tier | Platforms | Posts/Day | Price (USD/month) | WhatsApp |
 |------|-----------|-----------|-------|----------|
-| **Starter** | X + 1 Meta | 3 | R299 / $17 | ❌ |
-| **Growth** | X + All Meta + Telegram | 5 | R499 / $29 | ❌ |
-| **Pro** | All + WhatsApp Groups | 10 | R799 / $47 | ✅ |
+| **Starter** | X + 1 Meta | 3 | $17 | ❌ |
+| **Growth** | X + All Meta + Telegram | 5 | $29 | ❌ |
+| **Pro** | All + WhatsApp Groups | 10 | $47 | ✅ |
 | **Enterprise** | Everything + AI Voice | Unlimited | Custom | ✅ |
+
+- Regional discount coupons (e.g. South Africa) instead of local-currency pricing
 
 ### 6.3 Authentication Requirements
 - Any email address accepted, including free providers (Gmail, Outlook/Hotmail, Yahoo)
@@ -218,8 +229,42 @@ Landing Page → Register → Verify Email → Login → Dashboard
 - **Subscriptions**: PayFast (SA), PayPal, Payoneer, Crypto (ETH/BTC wallets)
 - **Billing**: Invoice on 25th, due last day of month, email notification
 - **Access Control**: Payment status gates platform access
+- **Card payments**: international cards; consider a merchant of record (Paddle / Lemon Squeezy) to handle global VAT/sales tax - check they accept an SA-registered business
+- **Affiliates**: program run through a large affiliate network (candidates: PartnerStack, Impact.com, Awin, CJ); SMPF accepts the network's tracking link at sign-up and reports each payment to the network
+- **Agencies**: earn commission on clients they register only if they join the affiliate program
+- **BRICS readiness**: payment layer built as plug-in provider modules, so BRICS Pay (and national rails like Pix, UPI, CIPS) can be added when available to businesses
 
 ---
+
+### 6.7 Style Profile Quiz (picture questions)
+Purpose: work out HOW to write for each client before they say WHAT to post. It is a style guide, not a clinical personality test - say so to users.
+Four styles (DISC-like): Bold (short, direct, results, strong calls-to-action) | Social (lively, emojis, memes, stories) | Warm (friendly, community, behind-the-scenes) | Thinker (facts, how-tos, detail).
+Each question shows 4 pictures + a word; options are always in order Bold / Social / Warm / Thinker:
+1. Ideal weekend: Winning a match / Party with friends / Camping with family / A good book
+2. Pick a car: Sports car / Colourful camper van / Reliable family SUV / Electric, latest tech
+3. Your desk: Goals & trophies / Colourful, photos everywhere / Tidy, plants, family photo / Two screens, charts
+4. Something goes wrong: Act fast / Talk it through / Check everyone's OK / Research first
+5. Pick a holiday: Climb a mountain / Beach festival / Family cabin / City museums
+6. Best compliment: "You get results" / "You're so fun" / "You're so kind" / "You're so smart"
+Result: main style (most answers) + second style (next most), e.g. "Bold with a Thinker side". Stored on the client profile and passed to the AI with every content request.
+
+### 6.5 Onboarding & Content Targeting
+- Onboarding questionnaire completed by the client OR by the agency on the client's behalf; can be skipped
+- Free-text "vision" field: who the client is / wants to be
+- Topic picker: 10-20 main topics, each with nested drop-downs going progressively deeper, to target the desired audience
+- AI researches each selected topic per target platform
+- Content is written separately for each platform (e.g. X short/punchy, LinkedIn professional, Instagram visual-first)
+- Only offer platforms deliverable at minimal cost; always ask "is marketing on this platform worth the effort?"
+- Planned extra channels: Quora and blogging platforms (API availability to be checked; Quora has no public posting API)
+- AI engine: open-source models via Groq and OpenRouter, others added over time
+
+### 6.6 Target Markets & Languages
+- International target market
+- Launch languages: English, Spanish, French
+- India & Pakistan: English only (targeting business people)
+- China & Russia: priority expansion markets (under-served by Western tools) - RESEARCH FIRST:
+  - Russia: platforms VK + Telegram; check payments (PayPal/Visa/Mastercard unavailable), data-localisation law, sanctions impact on providers
+  - China: separate platforms (WeChat, Weibo, Douyin, Xiaohongshu), likely needs Chinese entity, Chinese payments, site access through the firewall
 
 ## 7. Content Strategy & AI Persona
 
